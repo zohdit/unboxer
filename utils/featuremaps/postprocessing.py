@@ -1,12 +1,16 @@
+from hashlib import new
 import numpy as np
 import pandas as pd
 from scipy.ndimage import label
+from clusim.clustering import Clustering
 
 from config.config_featuremaps import FEATUREMAPS_CLUSTERING_MODE
 from utils.featuremaps.FeaturemapsClusteringMode import FeaturemapsClusteringMode
+from utils.stats import compute_comparison_matrix
+from config.config_general import INDIVIDUAL_SIMILARITY_METRIC
+from config.config_heatmaps import CLUSTERING_TECHNIQUE
 
-
-def process_featuremaps_data(df):
+def process_featuremaps_data(df, samples):
     """
     Process the featuremaps data and prepare it for the next steps
     :param df: The data extracted for the featuremaps
@@ -16,7 +20,7 @@ def process_featuremaps_data(df):
     original_df = pd.DataFrame.copy(df, deep=True)
     original_df['mode'] = 'original'
 
-    # Compute the merged clusters
+    # # Compute the merged clusters
     if FEATUREMAPS_CLUSTERING_MODE == FeaturemapsClusteringMode.REDUCED:
         merged_df = pd.DataFrame.copy(original_df, deep=True)
         # Compute the number of items in each cell
@@ -39,17 +43,34 @@ def process_featuremaps_data(df):
         merged_df = merged_df.drop(columns=['connected_components', 'cells_size'])
 
         complete_df = pd.concat([original_df, merged_df])
-    else:
-        complete_df = original_df
+    
+    elif FEATUREMAPS_CLUSTERING_MODE == FeaturemapsClusteringMode.CLUSTERED:
+    
+        original_df['clusters_list'] = original_df['clusters'].apply(__get_clusters_list)
+        complete_df = pd.DataFrame.copy(original_df, deep=True) 
 
-    # Fix the columns before merging
-    original_df['clusters_list'] = original_df['clusters'].apply(__get_clusters_list)
+        complete_df['clusters_list'] = complete_df['clusters'].apply(__recluster, args=[samples])
+
+    else:
+        original_df['clusters_list'] = original_df['clusters'].apply(__get_clusters_list)
+
     complete_df = complete_df.drop(columns='clusters')
-    # Merge the two datasets
     complete_df = complete_df.rename({'clusters_list': 'clusters'}, axis=1)
     complete_df = complete_df.sort_values(['map_size', 'approach', 'mode']).reset_index(drop=True)
-
     return complete_df
+
+def __recluster(clusters_matrix: np.ndarray, samples: list):
+    # Compute the similarity matrix for the contributions
+    similarity_matrix = compute_comparison_matrix(
+            samples,
+            metric=INDIVIDUAL_SIMILARITY_METRIC,
+            show_progress_bar=True,
+            multi_process=False
+    )
+    # Cluster the individuals using the similarity matrix
+    _clusters = CLUSTERING_TECHNIQUE(affinity='precomputed').fit_predict(similarity_matrix)
+    cluster_list = Clustering().from_membership_list(_clusters).to_cluster_list()
+    return np.array(cluster_list)
 
 
 def __get_clusters_list(clusters_matrix: np.ndarray) -> np.ndarray:

@@ -169,7 +169,7 @@ def visualize_cluster_images(
     # Sort the images by label
     label_predictions = global_values.predictions[global_values.test_labels == global_values.EXPECTED_LABEL]
     cluster_predictions = [label_predictions[idx] for idx in cluster]
-    print(cluster_predictions)
+
     cluster = np.array(cluster)
     cluster = cluster[np.argsort(cluster_predictions)]
 

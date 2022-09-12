@@ -1,10 +1,13 @@
-from typing import Callable
-
 from utils.featuremaps.FeaturemapsClusteringMode import FeaturemapsClusteringMode
-from utils.images.image_similarity.geometry_based import ssim
 
-NUM_CELLS: int = 10
+
+
+CASE_STUDY = "MNIST" #IMDB, MNIST
+VOCAB_SIZE = 2000
+NUM_CELLS: int = 25
 BITMAP_THRESHOLD: float = 0.5
 ORIENTATION_THRESHOLD: float = 0.
-FEATUREMAPS_CLUSTERING_MODE: FeaturemapsClusteringMode = FeaturemapsClusteringMode.ORIGINAL
-MAP_DIMENSIONS = [2, 3]
+FEATUREMAPS_CLUSTERING_MODE: FeaturemapsClusteringMode = FeaturemapsClusteringMode.CLUSTERED
+MAP_DIMENSIONS = [3]
+
+

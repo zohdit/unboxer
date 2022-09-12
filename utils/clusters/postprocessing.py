@@ -1,4 +1,6 @@
+from inspect import currentframe
 from itertools import combinations
+import random
 from typing import Callable
 
 import numpy as np
@@ -94,3 +96,105 @@ def get_misclassified_items(cluster: np.ndarray):
     mask_idxs = np.argwhere(mask_miss[mask_label]).flatten()
     intersection = np.intersect1d(cluster, mask_idxs)
     return intersection
+
+
+def select_data_by_cluster(df, train_data, train_labels, k):
+    selected_indices = set()
+    selected_data = []
+    selected_lables = []
+    
+    for column in df[['clusters']]:
+        columnSeriesObj = df[column]
+        # there is only one row
+        clusters = columnSeriesObj.values[0]
+
+    backup_array = clusters
+    while len(selected_indices) < k:
+        for cluster in backup_array:
+            # randomly select an element from each cluster
+            if len(cluster) > 0:
+                selected_index = random.choice(cluster)
+                selected_indices.add(selected_index)
+                cluster.remove(selected_index)
+            if len(selected_indices) >= k:
+                break
+
+    remaining_data = []
+    remaining_labels = []
+    remaining_indices = []
+
+    for i in range(0, len(train_data)):
+        if i in selected_indices:
+            selected_data.append(train_data[i])
+            selected_lables.append(train_labels[i])
+        else:
+            remaining_data.append(train_data[i])
+            remaining_labels.append(train_labels[i])
+            remaining_indices.append(i)
+
+    return np.array(selected_data), np.array(selected_lables), remaining_data, remaining_labels, remaining_indices
+
+
+def select_data_by_cluster_both(HM_df, FM_df, train_data, train_labels, k):
+    selected_indices = set()
+    selected_data = []
+    selected_lables = []
+
+    for column in FM_df[['clusters']]:
+            columnSeriesObj = FM_df[column]
+            # there is only one row
+            clusters_FM = columnSeriesObj.values[0]
+
+    for column in HM_df[['clusters']]:
+            columnSeriesObj = FM_df[column]
+            # there is only one row
+            clusters_HM = columnSeriesObj.values[0]
+
+
+    while len(selected_indices) < k:
+        not_added = True
+        while not_added:
+            for cluster in clusters_FM:
+                if len(cluster) > 0:
+                    selected_index = random.choice(cluster)
+                    if selected_index not in selected_indices:
+                        selected_indices.add(selected_index)
+                        cluster.remove(selected_index)
+                        not_added = False
+                        break
+                    else:
+                        cluster.remove(selected_index)
+            not_added = False
+        
+        not_added = True
+        while not_added:
+            for cluster in clusters_HM:
+                if len(cluster) > 0:
+                    selected_index = random.choice(cluster)
+                    if selected_index not in selected_indices:
+                        selected_indices.add(selected_index)
+                        cluster.remove(selected_index)
+                        not_added = False
+                        break
+                    else:
+                        cluster.remove(selected_index)
+            not_added = False
+        
+        not_added = True
+        if len(selected_indices) >= k:
+            break
+
+    remaining_data = []
+    remaining_labels = []
+    remaining_indices = []
+
+    for i in range(0, len(train_data)):
+        if i in selected_indices:
+            selected_data.append(train_data[i])
+            selected_lables.append(train_labels[i])
+        else:
+            remaining_data.append(train_data[i])
+            remaining_labels.append(train_labels[i])
+            remaining_indices.append(i)
+
+    return np.array(selected_data), np.array(selected_lables), remaining_data, remaining_labels, remaining_indices    

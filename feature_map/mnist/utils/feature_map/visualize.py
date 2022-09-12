@@ -12,7 +12,7 @@ from feature_map.mnist.utils.feature_map.compute import compute_map
 from utils.general import save_figure, scale_values_in_range
 
 
-def visualize_map(features, samples):
+def visualize_map(name, features, samples):
     """
         Visualize the samples and the features on a map. The map cells contains the number of samples for each
         cell, so empty cells (0) are white, cells with few elements have a light color, while cells with more
@@ -38,7 +38,7 @@ def visualize_map(features, samples):
     for features_combination in features_combinations:
         start_time = time.time()
         features_comb_str = '+'.join([feature.feature_name for feature in features_combination])
-        map_size_str = f'{NUM_CELLS}x{NUM_CELLS}'
+        map_size_str = f'{NUM_CELLS}x{NUM_CELLS}x{NUM_CELLS}'
         # Place the values over the map
         _, coverage_data, misbehavior_data, clusters = compute_map(features_combination, samples)
         # Handle the case of 3d maps
@@ -57,7 +57,7 @@ def visualize_map(features, samples):
         if len(features_combination) == 3:
             ax.set_zlabel(features_combination[2].feature_name)
         # Export the figure
-        save_figure(fig, f'out/featuremaps/featuremap_{EXPECTED_LABEL}_{map_size_str}_{features_comb_str}')
+        save_figure(fig, f'out/featuremaps/{name}_{EXPECTED_LABEL}_{map_size_str}_{features_comb_str}')
 
         # Record the data
         data.append({
@@ -66,7 +66,7 @@ def visualize_map(features, samples):
             'map_time': time.time() - start_time,
             'clusters': clusters
         })
-    plt.show()
+    # plt.show()
     return data
 
 

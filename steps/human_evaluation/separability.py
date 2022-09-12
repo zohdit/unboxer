@@ -78,7 +78,7 @@ def export_clusters_sample_images():
         # Process the clusters
         for idx, cluster in tqdm(
                 list(enumerate(cluster_list)),
-                desc='Visualizing the central elements fo the clusters',
+                desc='Visualizing the central elements for the clusters',
                 leave=False
         ):
             # Get the central elements in the cluster

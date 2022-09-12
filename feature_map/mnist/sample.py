@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from feature_map.mnist.feature_simulator import FeatureSimulator
-from feature_map.mnist.utils import rasterization_tools
 
 
 class Sample:

@@ -39,7 +39,7 @@ if __name__ == '__main__':
     warnings.filterwarnings('ignore')
     choices_str = input(__MENU)
     while choices_str != 'exit':
-        try:
+        # try:
             choices = [int(choice) for choice in choices_str.split(' ')]
 
             # Get the handler for the input
@@ -53,7 +53,7 @@ if __name__ == '__main__':
                         [handler_item() for handler_item in list(handler)[:-1]]
                 else:
                     print(__INVALID_OPTION(choices_str))
-        except ValueError:
-            print(__INVALID_OPTION(choices_str))
+        # except ValueError:
+        #     print(__INVALID_OPTION(choices_str))
 
-        choices_str = input(__MENU)
+            choices_str = input(__MENU)

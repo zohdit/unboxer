@@ -30,3 +30,47 @@ def intra_pairs_similarity(lhs: Clustering, rhs: Clustering) -> float:
     # Compute the fraction of common intrapairs
     score = len(intra_lhs.intersection(intra_rhs)) * 2 / (len(intra_lhs) + len(intra_rhs))
     return score
+
+
+def custom_similarity(lhs: Clustering, rhs: Clustering) -> float:
+    """
+    Compute a custom similarity between a high level clustering and low level clustering
+    The custom similarity is computed based on color distribution in high level clusters
+    :param lhs: the low level cluster
+    :param rhs: the high level cluster
+    :return: The similarity between two clusters
+    """
+
+    lhs, rhs = lhs.to_cluster_list(), rhs.to_cluster_list()
+
+    clone_rhs = rhs.copy()
+
+    color = -1
+    for cluster in lhs:
+        for ind in cluster:
+            for cluster in clone_rhs:
+                for idx in range(len(cluster)):
+                    if cluster[idx] == ind:
+                        cluster[idx] = color
+        color -= 1
+
+    gini_impurity = 0
+    # compute impurity of eacb high level cluster
+    for cluster in clone_rhs:
+        # if cluster is singletoin imputrity is 0
+        if len(cluster) == 1:
+            impurity = 0
+        # otherwise impurity is sum of manhattan distances 
+        else:           
+            p_total = list(set(cluster)) 
+            sigma_p_color = 0
+            for color in p_total:
+                p_color = cluster.count(color)/len(cluster)
+                sigma_p_color = sigma_p_color + (p_color*p_color)    
+            impurity = 1 - sigma_p_color
+
+        gini_impurity = impurity + gini_impurity
+    
+    return gini_impurity/len(clone_rhs)    
+
+

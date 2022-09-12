@@ -10,6 +10,7 @@ from utils.stats import compute_comparison_matrix
 
 def show_comparison_matrix(
         values: list,
+        approaches: list,
         index: list,
         metric: Callable,
         show_values: bool = True,
@@ -36,6 +37,7 @@ def show_comparison_matrix(
     # Get the distance matrix
     matrix = compute_comparison_matrix(
         values=values,
+        approaches=approaches,
         metric=metric,
         show_progress_bar=show_progress_bar,
         multi_process=multi_process

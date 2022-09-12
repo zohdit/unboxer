@@ -4,13 +4,13 @@ import tensorflow as tf
 from tensorflow import keras
 
 from config.config_data import EXPECTED_LABEL
-from config.config_dirs import MODEL
+from config.config_dirs import MODEL_MNIST
 from feature_map.mnist.utils.general import reshape
 
 
 class Predictor:
     # Load the pre-trained model.
-    model = keras.models.load_model(MODEL)
+    model = keras.models.load_model(MODEL_MNIST)
     print("Loaded model from disk")
 
     @staticmethod

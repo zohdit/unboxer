@@ -47,12 +47,12 @@ def scale_values_in_range(values_lists, min_size: float, max_size: float):
 
 
 def update_data(old_data: pd.DataFrame, new_data: pd.DataFrame, on_columns: list) -> pd.DataFrame:
-    # Delete the rows to be updated
-    old_data['combined'] = old_data.apply(lambda row: tuple(row[on_columns]), axis=1)
-    new_data['combined'] = new_data.apply(lambda row: tuple(row[on_columns]), axis=1)
-    old_data = old_data[~old_data['combined'].isin(new_data['combined'])]
-    # Concatenate the data
-    updated_data = pd.concat([old_data, new_data], axis=0).sort_values(on_columns)
-    updated_data = updated_data.drop(['combined'], axis=1)
+     # Delete the rows to be updated
+     old_data['combined'] = old_data.apply(lambda row: tuple(row[on_columns]), axis=1)
+     new_data['combined'] = new_data.apply(lambda row: tuple(row[on_columns]), axis=1)
+     old_data = old_data[~old_data['combined'].isin(new_data['combined'])]
+     # Concatenate the data
+     updated_data = pd.concat([old_data, new_data], axis=0).sort_values(on_columns)
+     updated_data = updated_data.drop(['combined'], axis=1)
 
-    return updated_data
+     return updated_data

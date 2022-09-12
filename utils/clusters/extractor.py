@@ -34,7 +34,7 @@ def get_frac_misses(cluster: list) -> float:
 
 
 def get_labels_purity(cluster: list):
-    # Filter for the misclassified entries in the clusters
+    # Get the indexes of the misclassified elements
     cluster = np.array(cluster)
     masked_entries = get_misclassified_items(cluster)
     # No misclassified entries -> return np.nan

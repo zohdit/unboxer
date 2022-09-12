@@ -66,7 +66,6 @@ def preprocess_data():
     merged['frac_mixed'] = merged['frac_misses'].apply(
         lambda misses: len([entry for entry in misses if 0 < entry < 1]) / len(misses)
     )
-
     return merged
 
 
