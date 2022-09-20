@@ -43,9 +43,12 @@ def orientation_calc(sample):
     image = sample.image
     # get the indices where the matrix is greater than the threshold
     y, x = np.where(image > ORIENTATION_THRESHOLD)
-    lr = LinearRegression(fit_intercept=True)
-    lr.fit(x.reshape(-1, 1), y)
-    orientation = -lr.coef_[0] * 100
+    if len(x) > 0:
+        lr = LinearRegression(fit_intercept=True)
+        lr.fit(x.reshape(-1, 1), y)
+        orientation = -lr.coef_[0] * 100
+    else:
+        orientation = 0
     return int(orientation)
 
 

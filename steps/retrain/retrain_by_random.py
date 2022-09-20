@@ -16,7 +16,7 @@ def retrain_by_random():
         rgb=USE_RGB,
         verbose=True
     )
-    test_data = tf.image.rgb_to_grayscale(test_data).numpy()
+    # test_data = tf.image.rgb_to_grayscale(test_data).numpy()
 
     with open("logs/mnist/random_acc.txt", "w") as f:
         # repeat the experiment 5 times
@@ -30,26 +30,22 @@ def retrain_by_random():
             selected_train_labels = np.load(f"logs/mnist/retrain_data/selected_labels_{rep}.npy") 
             
             n = 5
-        
-            k = int(len(remaining_train_data)/n)   
+            k = 50  
             
             for part in range(1, n+1):  
                 new_train_data = []
                 new_train_labels = []
                 # randomly select k samples from remaining train data
-                if part != n:
-                    new_train_indices = random.sample(remaining_train_indices, k)
-                    for index in new_train_indices:
-                        new_train_data.append(remaining_train_data[index])
-                        new_train_labels.append(remaining_train_labels[index])
-                        remaining_train_indices.remove(index)
 
-                    selected_train_data = np.concatenate((new_train_data, selected_train_data), axis=0)  
-                    selected_train_labels = np.concatenate((new_train_labels, selected_train_labels), axis=0)  
-                # last batch of train data
-                else:
-                    selected_train_data = train_data
-                    selected_train_labels = train_labels
+                new_train_indices = random.sample(remaining_train_indices, k)
+                for index in new_train_indices:
+                    new_train_data.append(remaining_train_data[index])
+                    new_train_labels.append(remaining_train_labels[index])
+                    remaining_train_indices.remove(index)
+
+                selected_train_data = np.concatenate((new_train_data, selected_train_data), axis=0)  
+                selected_train_labels = np.concatenate((new_train_labels, selected_train_labels), axis=0)  
+
                 
 
                 acc1, acc2 = create_model(np.array(selected_train_data), np.array(selected_train_labels), test_data, test_labels, f"retrained_random_{part}")

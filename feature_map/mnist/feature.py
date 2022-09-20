@@ -16,8 +16,8 @@ class Feature:
         self.max_value = max_value
         # get the name for the corresponding feature simulator
         self.feature_simulator = dict(FeatureSimulator.get_simulators().items())[feature_name].__name__
-        self.num_cells = NUM_CELLS
-        self.original_bins = np.linspace(min_value, max_value, NUM_CELLS)
+        self.num_cells = max_value - min_value
+        self.original_bins = np.linspace(min_value, max_value, self.num_cells)
 
     def feature_descriptor(self, sample: Sample):
         """

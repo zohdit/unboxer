@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage import label
 from clusim.clustering import Clustering
+from IPython.display import display
 
 from config.config_featuremaps import FEATUREMAPS_CLUSTERING_MODE
 from utils.featuremaps.FeaturemapsClusteringMode import FeaturemapsClusteringMode
@@ -18,8 +19,7 @@ def process_featuremaps_data(df, samples):
     """
     # Create the base dataframe with the features and the cells containing the clusters
     original_df = pd.DataFrame.copy(df, deep=True)
-    original_df['mode'] = 'original'
-
+    
     # # Compute the merged clusters
     if FEATUREMAPS_CLUSTERING_MODE == FeaturemapsClusteringMode.REDUCED:
         merged_df = pd.DataFrame.copy(original_df, deep=True)
@@ -41,18 +41,18 @@ def process_featuremaps_data(df, samples):
         )
         merged_df['mode'] = 'reduced'
         merged_df = merged_df.drop(columns=['connected_components', 'cells_size'])
-
-        complete_df = pd.concat([original_df, merged_df])
+        complete_df = merged_df 
     
     elif FEATUREMAPS_CLUSTERING_MODE == FeaturemapsClusteringMode.CLUSTERED:
-    
+        original_df['mode'] = 'clustered'
         original_df['clusters_list'] = original_df['clusters'].apply(__get_clusters_list)
         complete_df = pd.DataFrame.copy(original_df, deep=True) 
-
         complete_df['clusters_list'] = complete_df['clusters'].apply(__recluster, args=[samples])
 
     else:
+        original_df['mode'] = 'original'
         original_df['clusters_list'] = original_df['clusters'].apply(__get_clusters_list)
+        complete_df = original_df
 
     complete_df = complete_df.drop(columns='clusters')
     complete_df = complete_df.rename({'clusters_list': 'clusters'}, axis=1)
@@ -63,6 +63,7 @@ def __recluster(clusters_matrix: np.ndarray, samples: list):
     # Compute the similarity matrix for the contributions
     similarity_matrix = compute_comparison_matrix(
             samples,
+            approaches=[],
             metric=INDIVIDUAL_SIMILARITY_METRIC,
             show_progress_bar=True,
             multi_process=False
@@ -70,6 +71,7 @@ def __recluster(clusters_matrix: np.ndarray, samples: list):
     # Cluster the individuals using the similarity matrix
     _clusters = CLUSTERING_TECHNIQUE(affinity='precomputed').fit_predict(similarity_matrix)
     cluster_list = Clustering().from_membership_list(_clusters).to_cluster_list()
+    print(cluster_list)
     return np.array(cluster_list)
 
 

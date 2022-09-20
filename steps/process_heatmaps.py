@@ -40,6 +40,7 @@ def main():
     # If the processing mode is the original one, or there are no best logs -> try all the combinations
     # if not os.path.exists(BEST_CONFIGURATIONS) or approach is OriginalMode:
     # Collect the approaches
+
     approaches = [
         approach(
             explainer=explainer(global_values.classifier),

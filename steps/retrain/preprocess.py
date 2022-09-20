@@ -22,10 +22,7 @@ def train_initial():
     
     with open("logs/mnist/orig_acc.txt", "w") as f:
         for ind in range(1, 6):
-
-            n = 6
-            k = int(len(train_data_digit)/n)  
-
+            k = 100
             # randomly select k samples from train_data of expected label only                
             selected_train_index = random.sample(range(0, len(train_data_digit)), k)
             selected_train_labels = []

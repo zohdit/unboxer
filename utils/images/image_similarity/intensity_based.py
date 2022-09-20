@@ -10,7 +10,7 @@ def euclidean_similarity(lhs: np.ndarray, rhs: np.ndarray) -> float:
     :param rhs: The second matrix
     :return: The euclidean distance between the two matrices
     """
-    # Compute the distance between teh two matrices
+    # Compute the distance between the two matrices
     dist = np.sqrt(np.sum((lhs - rhs) ** 2))
     # Compute the maximum distance between the two matrices
     max_dist = np.sqrt(np.sum((np.ones_like(lhs) - np.zeros_like(rhs)) ** 2))

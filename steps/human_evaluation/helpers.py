@@ -4,7 +4,7 @@ import pandas as pd
 from config.config_dirs import FEATUREMAPS_DATA, HEATMAPS_DATA
 from utils import global_values
 from utils.dataframes.extractor import get_average_popularity_score
-
+from IPython.display import display
 
 def preprocess_featuremaps_data():
     # Read the featuremaps data
@@ -48,8 +48,8 @@ def preprocess_data():
     # Read all the needed data
     featuremaps_data = preprocess_featuremaps_data()
     heatmaps_data = preprocess_heatmaps_data()
-    mask_label = np.array(global_values.test_labels == global_values.EXPECTED_LABEL)
-    mask_miss = np.array(global_values.test_labels != global_values.predictions)
+    mask_label = np.array(global_values.generated_labels == global_values.EXPECTED_LABEL)
+    mask_miss = np.array(global_values.generated_labels != global_values.generated_predictions)
     misclassified_idxs = np.argwhere(mask_miss[mask_label])
 
     # Merge the data for the featuremaps and the heatmaps
@@ -66,6 +66,7 @@ def preprocess_data():
     merged['frac_mixed'] = merged['frac_misses'].apply(
         lambda misses: len([entry for entry in misses if 0 < entry < 1]) / len(misses)
     )
+    # pd.set_option('display.max_colwidth', None)
     return merged
 
 

@@ -18,7 +18,7 @@ def combined_distance_matrix():
     distances_df, fig, ax = show_comparison_matrix(
         values=[Clustering().from_cluster_list(clusters) for clusters in plot_data['clusters']],
         approaches=[approach for approach in plot_data['approach']],
-        metric=lambda lhs, rhs: 1 - CLUSTERS_SIMILARITY_METRIC(lhs, rhs),
+        metric=lambda lhs, rhs: CLUSTERS_SIMILARITY_METRIC(lhs, rhs),
         index=plot_data['approach'],
         show_progress_bar=True,
         remove_diagonal=False

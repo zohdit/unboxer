@@ -13,8 +13,8 @@ BEST_CONFIGURATIONS = 'logs/mnist/best_configurations'
 
 MNIST_INPUTS = 'in/data/mnist_inputs'
 
-HEATMAPS_DATA_RAW = 'logs/mnist/original/heatmaps_data_raw'
-HEATMAPS_DATA = 'logs/mnist/original/heatmaps_data'
+HEATMAPS_DATA_RAW = 'logs/mnist/heatmaps_data_raw'
+HEATMAPS_DATA = 'logs/mnist/heatmaps_data'
 
 FEATUREMAPS_META = 'logs/mnist/featuremaps_meta'
 FEATUREMAPS_DATA_RAW = 'logs/mnist/featuremaps_data_raw'

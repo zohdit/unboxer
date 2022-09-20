@@ -24,6 +24,8 @@ def compute_map(features, samples):
     for idx, sample in enumerate(samples):
         # Coordinates reason in terms of bins 1, 2, 3, while data is 0-indexed
         coords = tuple([feature.get_coordinate_for(sample) - 1 for feature in features])
+        # coords = tuple([feature.feature_descriptor(sample) for feature in features])
+        sample.coords = coords
         # Archive the sample
 
         archive_data[coords].append(sample)
@@ -35,4 +37,4 @@ def compute_map(features, samples):
         # Update the clusters
         clusters[coords].append(idx)
 
-    return archive_data, coverage_data, misbehaviour_data, clusters
+    return archive_data, coverage_data, misbehaviour_data, clusters, samples

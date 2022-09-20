@@ -6,7 +6,7 @@ from utils.clusters.similarity_metrics import intra_pairs_similarity, custom_sim
 from clusim.clustering import Clustering
 
 from utils.clusters.extractor import get_frac_misses
-from utils.images.image_similarity.featuremap_based import manhattan
+from utils.images.image_similarity.featuremap_based import manhattan_sim
 from utils.images.image_similarity.geometry_based import ssim
 from utils.images.image_similarity.intensity_based import euclidean_similarity, mean_squared_similarity
 from utils.images.postprocessing import mask_noise
@@ -32,12 +32,12 @@ def IMAGES_SIMILARITY_METRIC(lhs, rhs, threshold: float = None, max_activation: 
     return euclidean_similarity(lhs, rhs)
 
 def INDIVIDUAL_SIMILARITY_METRIC(lhs, rhs):
-    return manhattan(lhs, rhs)
+    return manhattan_sim(lhs, rhs)
 
 HUMAN_EVALUATION_APPROACHES = [
     'Lime',
-    # 'IntegratedGradients',
-    'GradCAM',
-    'moves+orientation+bitmaps(10)_original'
+    'IntegratedGradients',
+    # 'GradCAMPP',
+    'moves+orientation+bitmaps(100)_clustered'
 ]
 

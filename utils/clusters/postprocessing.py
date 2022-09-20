@@ -113,6 +113,7 @@ def select_data_by_cluster(df, train_data, train_labels, k):
         for cluster in backup_array:
             # randomly select an element from each cluster
             if len(cluster) > 0:
+                cluster = list(cluster)
                 selected_index = random.choice(cluster)
                 selected_indices.add(selected_index)
                 cluster.remove(selected_index)
@@ -155,6 +156,7 @@ def select_data_by_cluster_both(HM_df, FM_df, train_data, train_labels, k):
         not_added = True
         while not_added:
             for cluster in clusters_FM:
+                cluster = list(cluster)
                 if len(cluster) > 0:
                     selected_index = random.choice(cluster)
                     if selected_index not in selected_indices:
@@ -169,6 +171,7 @@ def select_data_by_cluster_both(HM_df, FM_df, train_data, train_labels, k):
         not_added = True
         while not_added:
             for cluster in clusters_HM:
+                cluster = list(cluster)
                 if len(cluster) > 0:
                     selected_index = random.choice(cluster)
                     if selected_index not in selected_indices:

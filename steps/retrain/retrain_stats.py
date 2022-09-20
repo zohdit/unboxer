@@ -88,27 +88,22 @@ if __name__ == "__main__":
     df = pd.DataFrame()
     tools = []
     accs = []
-    for subdir, dirs, files in os.walk(dataset_folder, followlinks=False):
+    list_accs = []
+    
+    for data_file in list_accs:        
+        if "featuremap" in data_file[0]:
+            tool = "Feature map 5x5"
+        if "lime" in data_file[0]:
+            tool = "Lime"
+        if "integratedgradients" in data_file[0]:
+            tool = "i=IntegratedGradients"
+        if "random" in data_file[0]:
+            tool = "Random"
+        if "both" in data_file[0]:
+            tool = "Combined"
 
-        # Consider only the files that match the pattern
-        for npy_data_file in [os.path.join(subdir, f) for f in files if f.endswith(".npy")]:
-            data = np.load(npy_data_file)
-
-            if "featuremap" in npy_data_file:
-                if "5x5" in npy_data_file:
-                    tool = "Feature map 5x5"
-                elif "10x10" in npy_data_file:
-                    tool = "Feature map 10x10"
-            if "lime" in npy_data_file:
-                tool = "Lime"
-            if "gradcampp" in npy_data_file:
-                tool = "GradCAM++"
-            if "random" in npy_data_file:
-                tool = "Random"
-            if "both" in npy_data_file:
-                tool = "Combined"
             tools.append(tool)
-            accs.append(data)
+            accs.append(data_file[1])
             print(tool)
             print(np.average(data))
         

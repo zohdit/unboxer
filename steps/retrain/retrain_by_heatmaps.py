@@ -45,7 +45,7 @@ def retrain_by_heatmap():
     accuracies2 = []
 
     n = 6
-    k = int(len(train_data_digit)/n)  
+    k = 100  
                      
     selected_train_index = random.sample(train_indices_digit, k)
     selected_train_labels = []
@@ -134,7 +134,7 @@ def retrain_by_heatmap_provided_explanations():
     )
     test_data = tf.image.rgb_to_grayscale(test_data).numpy()
 
-    with open("logs/mnist/hm_acc.txt", "w") as f:
+    with open("logs/mnist/hm_acc_100.txt", "w") as f:
         # repeat the experiment 5 times
         for rep in range(1, 6):
             f.write(f"Run {rep}: \n")
@@ -152,22 +152,17 @@ def retrain_by_heatmap_provided_explanations():
             
             n = 5
         
-            k = int(len(remaining_train_data)/n)   
+            k = 100   
             
             for part in range(1, n+1):  
                 new_train_data = []
                 new_train_labels = []
                 # using HM select k samples from remaining train data
-                if part != n:
-                    heatmaps_df = generate_clusters_by_heatmap_indices(remaining_train_indices, classifier)
-                    new_train_data, new_train_labels, remaining_train_data, remaining_train_labels, remaining_train_indices = select_data_by_cluster(heatmaps_df, remaining_train_data, remaining_train_labels, k)
-                    selected_train_data = np.concatenate((new_train_data, selected_train_data), axis=0)  
-                    selected_train_labels = np.concatenate((new_train_labels, selected_train_labels), axis=0) 
-                
-                # last batch of train data
-                else:
-                    selected_train_data = train_data
-                    selected_train_labels = train_labels
+                heatmaps_df = generate_clusters_by_heatmap_indices(remaining_train_indices, classifier)
+                new_train_data, new_train_labels, remaining_train_data, remaining_train_labels, remaining_train_indices = select_data_by_cluster(heatmaps_df, remaining_train_data, remaining_train_labels, k)
+                selected_train_data = np.concatenate((new_train_data, selected_train_data), axis=0)  
+                selected_train_labels = np.concatenate((new_train_labels, selected_train_labels), axis=0) 
+            
 
                 acc1, acc2 = create_model(np.array(selected_train_data), np.array(selected_train_labels), test_data, test_labels, f"retrained_hm_{part}")
                 

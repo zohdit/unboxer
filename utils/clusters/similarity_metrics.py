@@ -71,6 +71,6 @@ def custom_similarity(lhs: Clustering, rhs: Clustering) -> float:
 
         gini_impurity = impurity + gini_impurity
     
-    return gini_impurity/len(clone_rhs)    
+    return 1 - gini_impurity/len(clone_rhs)    
 
 

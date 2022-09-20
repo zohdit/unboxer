@@ -20,54 +20,39 @@ def visualize_map(name, features, samples):
         collisions
     Returns:
     """
-    print('Generating the featuremaps ...')
-
-    # Create one visualization for each pair of self.axes selected in order
     data = []
-    map_dimensions = [
-        min(3, map_dimension) for map_dimension
-        in (MAP_DIMENSIONS if type(MAP_DIMENSIONS) is list else [MAP_DIMENSIONS])
-    ]
-    # Compute all the 2d and 3d feature combinations
-    features_combinations = reduce(
-        lambda acc, comb: acc + comb,
-        [
-            list(combinations(features, n_features))
-            for n_features in map_dimensions]
-    )
-    for features_combination in features_combinations:
-        start_time = time.time()
-        features_comb_str = '+'.join([feature.feature_name for feature in features_combination])
-        map_size_str = f'{NUM_CELLS}x{NUM_CELLS}x{NUM_CELLS}'
-        # Place the values over the map
-        _, coverage_data, misbehavior_data, clusters = compute_map(features_combination, samples)
-        # Handle the case of 3d maps
-        if len(features_combination) == 3:
-            # Visualize the map
-            fig, ax = visualize_3d_map(coverage_data, misbehavior_data)
-        # Handle the case of 2d maps
-        else:
-            # Visualize the map
-            fig, ax = visualize_2d_map(coverage_data, misbehavior_data)
+    start_time = time.time()
+    features_comb_str = '+'.join([feature.feature_name for feature in features])
+    map_size_str = f'{NUM_CELLS}x{NUM_CELLS}x{NUM_CELLS}'
+    # Place the values over the map
+    _, coverage_data, misbehavior_data, clusters, samples = compute_map(features, samples)
+    # Handle the case of 3d maps
+    if len(features) == 3:
+        # Visualize the map
+        fig, ax = visualize_3d_map(coverage_data, misbehavior_data)
+    # Handle the case of 2d maps
+    else:
+        # Visualize the map
+        fig, ax = visualize_2d_map(coverage_data, misbehavior_data)
 
-        # Set the style
-        fig.suptitle(f'Feature map: digit {EXPECTED_LABEL}', fontsize=16)
-        ax.set_xlabel(features_combination[0].feature_name)
-        ax.set_ylabel(features_combination[1].feature_name)
-        if len(features_combination) == 3:
-            ax.set_zlabel(features_combination[2].feature_name)
-        # Export the figure
-        save_figure(fig, f'out/featuremaps/{name}_{EXPECTED_LABEL}_{map_size_str}_{features_comb_str}')
+    # Set the style
+    fig.suptitle(f'Feature map: digit {EXPECTED_LABEL}', fontsize=16)
+    ax.set_xlabel(features[0].feature_name)
+    ax.set_ylabel(features[1].feature_name)
+    if len(features) == 3:
+        ax.set_zlabel(features[2].feature_name)
+    # Export the figure
+    save_figure(fig, f'out/featuremaps/{name}_{EXPECTED_LABEL}_{map_size_str}_{features_comb_str}')
 
-        # Record the data
-        data.append({
-            'approach': features_comb_str,
-            'map_size': NUM_CELLS,
-            'map_time': time.time() - start_time,
-            'clusters': clusters
-        })
+    # Record the data
+    data.append({
+        'approach': features_comb_str,
+        'map_size': NUM_CELLS,
+        'map_time': time.time() - start_time,
+        'clusters': clusters
+    })
     # plt.show()
-    return data
+    return data, samples
 
 
 def visualize_3d_map(coverage_data, misbehavior_data):
@@ -97,14 +82,14 @@ def visualize_2d_map(coverage_data, misbehavior_data):
     fig, ax = plt.subplots(figsize=(8, 8))
     # Set the colormap
     colormap = sns.cubehelix_palette(dark=0.5, light=0.9, as_cmap=True)
-    # Set the color for out-of-rage values to be white (not visible)
+    # Set the color for out-of-range values to be white (not visible)
     colormap.set_under('1.0')
     # Plot the coverage data
     sns.heatmap(coverage_data, vmin=1, vmax=20, square=True, cmap=colormap, cbar_kws={'label': 'cluster size'})
     # Plot the misbehavior data
     x, y, values = unpack_plot_data(misbehavior_data)
     # Ensure that the markers are centered in the cells
-    plt.scatter(x + .5, y + .5, color="black", alpha=values, s=100, label='misclassified (%)')
+    plt.scatter(x + .5, y + .5, color="black", alpha=values, s=20, label='misclassified (%)')
     # Style
     ax.legend(frameon=False, bbox_to_anchor=(.3, 1.1))
     return fig, ax

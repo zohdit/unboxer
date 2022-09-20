@@ -71,21 +71,21 @@ def compute_comparison_matrix(
         multi_process: bool = False
 ):
     # Compute all the combinations of values
-    # pairs = list(combinations(values, 2))
-    pairs = []
-    app_pairs = list(combinations(range(len(approaches)), 2))
-    # if we use custom similarity the high level explanation
-    # should be passed only as second argument (rhs)
-    for idx in range(len(app_pairs)):
-        # if the approach is high level
-        if "original" in approaches[app_pairs[idx][0]]:
-            app_pairs[idx] = (app_pairs[idx][1], app_pairs[idx][0])
 
-
-    for idx1, idx2 in app_pairs:
-        pairs.append((values[idx1], values[idx2]))
-
-
+    if len(approaches) > 0: 
+        pairs = []
+        app_pairs = list(combinations(range(len(approaches)), 2))
+        # if we use custom similarity the high level explanation
+        # should be passed only as second argument (rhs)
+        for idx in range(len(app_pairs)):
+            # if the approach is high level
+            if "original" in approaches[app_pairs[idx][0]]:
+                app_pairs[idx] = (app_pairs[idx][1], app_pairs[idx][0])
+    
+        for idx1, idx2 in app_pairs:
+            pairs.append((values[idx1], values[idx2]))
+    else:
+        pairs = list(combinations(values, 2))
 
     # Show the progress bar
     if show_progress_bar:

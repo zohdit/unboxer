@@ -167,7 +167,7 @@ def visualize_cluster_images(
     fig, ax = plt.subplots(n_rows, n_cols, figsize=(2 * n_cols, 2 * n_rows))
 
     # Sort the images by label
-    label_predictions = global_values.predictions[global_values.test_labels == global_values.EXPECTED_LABEL]
+    label_predictions = global_values.generated_predictions[global_values.generated_labels == global_values.EXPECTED_LABEL]
     cluster_predictions = [label_predictions[idx] for idx in cluster]
 
     cluster = np.array(cluster)

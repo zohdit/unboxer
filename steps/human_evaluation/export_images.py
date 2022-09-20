@@ -27,7 +27,10 @@ from IPython.display import display
 __BASE_DIR = 'out/human_evaluation'
 
 def export_clusters_sample_images():
-    df = sample_clusters()
+    df = preprocess_data()
+
+    df = df.groupby('approach').first().reset_index()
+
     # Iterate over the approaches
     df = df.set_index('approach')
     approaches_df = []
@@ -58,21 +61,24 @@ def export_clusters_sample_images():
             # Get the clusters and contributions for the selected approach
             cluster_list, contributions = df.loc[approach][['clusters', 'contributions']]
             # Filter the clusters for the misclassified elements
-            cluster_list = [get_misclassified_items(cluster) for cluster in cluster_list]
+            # cluster_list = [get_misclassified_items(cluster) for cluster in cluster_list]
             # Keep the clusters with more than one misclassified element
             cluster_list = [cluster for cluster in cluster_list if len(cluster) > 3]
             cluster_list = np.array(cluster_list, dtype=list)
             shuffle(cluster_list)
             cluster_list = cluster_list[:NUM_SEPARABILITY_CLUSTERS]
             # Get the contributions or the images themselves
-            label_images = global_values.test_data_gs[global_values.test_labels == global_values.EXPECTED_LABEL]
-
+            label_images = np.array((global_values.generated_data_gs[global_values.generated_labels == global_values.EXPECTED_LABEL]))
+            contributions = np.array(contributions)
             # Process the clusters
             for idx, cluster in tqdm(
                     list(enumerate(cluster_list)),
                     desc='Visualizing the central elements for the clusters',
                     leave=False
             ):
+                if "moves" in approach:
+                    contributions = None
+                    cluster = list(cluster)
                 # Get the central elements in the cluster
                 central_elements = get_central_elements(
                     cluster,
@@ -83,10 +89,10 @@ def export_clusters_sample_images():
                 )
                 central_elements = np.array(central_elements)
                 
-                mask_label = (global_values.test_labels == EXPECTED_LABEL)
-                test_data_gs = global_values.test_data_gs[mask_label]
-                test_labels =  global_values.test_labels[mask_label]
-                predictions = global_values.predictions[mask_label]
+                mask_label = (global_values.generated_labels == EXPECTED_LABEL)
+                test_data_gs = global_values.generated_data_gs[mask_label]
+                test_labels =  global_values.generated_labels[mask_label]
+                predictions = global_values.generated_predictions[mask_label]
 
                 features = []
                 for element in central_elements:
