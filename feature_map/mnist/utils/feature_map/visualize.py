@@ -20,6 +20,7 @@ def visualize_map(name, features, samples):
         collisions
     Returns:
     """
+    print('Generating the featuremaps ...')
     data = []
     start_time = time.time()
     features_comb_str = '+'.join([feature.feature_name for feature in features])

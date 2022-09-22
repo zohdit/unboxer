@@ -15,6 +15,7 @@ class Sample:
             feature_name: feature_simulator(self)
             for feature_name, feature_simulator in FeatureSimulator.get_simulators().items()
         }
+        self.coords = []
 
     def to_dict(self):
         return {'id': id(self),

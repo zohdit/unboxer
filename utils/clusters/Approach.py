@@ -6,6 +6,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.manifold import TSNE
 from sklearn.metrics import silhouette_score
+from clusim.clustering import Clustering
 
 from config.config_general import IMAGES_SIMILARITY_METRIC
 from config.config_heatmaps import CLUSTERING_TECHNIQUE
@@ -53,7 +54,7 @@ class Approach(metaclass=abc.ABCMeta):
     ) -> np.ndarray:
         # Generate the contributions
         if CASE_STUDY == "MNIST":
-            try:            
+            try:          
                 contributions = self.__explainer.explain(global_values.generated_data[mask], global_values.generated_predictions_cat[mask])
             except ValueError:
                 # The explainer expects grayscale images
@@ -70,7 +71,8 @@ class Approach(metaclass=abc.ABCMeta):
                 contributions = np.squeeze(tf.image.rgb_to_grayscale(contributions).numpy())
             except tf.errors.InvalidArgumentError:
                 pass
-                    # Filter for the positive contributions
+            
+            # Filter for the positive contributions
             if only_positive:
                 contributions = np.ma.masked_less(np.squeeze(contributions), 0).filled(0)
                 
@@ -128,8 +130,8 @@ class Approach(metaclass=abc.ABCMeta):
 
 
     def __str__(self):
-        params = [technique.get_params().get('perplexity') for technique in self.__dimensionality_reduction_techniques]
-        return f'{self.__explainer.__class__.__name__} - perplexity = {params}'
+        params = [(technique.get_params().get('perplexity'), technique.get_params().get('n_components')) for technique in self.__dimensionality_reduction_techniques]
+        return f'{self.__explainer.__class__.__name__} - perplexity, dimensions = {params}'
 
 
 class LocalLatentMode(Approach):
@@ -209,11 +211,16 @@ class OriginalMode(Approach):
             list(contributions),
             approaches=[],
             metric=IMAGES_SIMILARITY_METRIC,
+            args=None,
             show_progress_bar=True,
             multi_process=False
         )
         # Cluster the contributions using the similarity matrix
+
+        # sometime affinity gives only one cluster!
         clusters = CLUSTERING_TECHNIQUE(affinity='precomputed').fit_predict(similarity_matrix)
+        while len(Clustering().from_membership_list(clusters).to_cluster_list()) == 1:
+            clusters = CLUSTERING_TECHNIQUE(affinity='precomputed').fit_predict(similarity_matrix)
         # Compute the silhouette for the clusters
         try:
             distance_matrix = 1 - similarity_matrix

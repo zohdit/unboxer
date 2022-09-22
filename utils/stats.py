@@ -67,6 +67,7 @@ def compute_comparison_matrix(
         values: list,
         approaches: list,
         metric: callable,
+        args,
         show_progress_bar: bool = False,
         multi_process: bool = False
 ):
@@ -79,13 +80,15 @@ def compute_comparison_matrix(
         # should be passed only as second argument (rhs)
         for idx in range(len(app_pairs)):
             # if the approach is high level
-            if "original" in approaches[app_pairs[idx][0]]:
+            if "moves" in approaches[app_pairs[idx][0]]:
                 app_pairs[idx] = (app_pairs[idx][1], app_pairs[idx][0])
     
         for idx1, idx2 in app_pairs:
             pairs.append((values[idx1], values[idx2]))
     else:
         pairs = list(combinations(values, 2))
+
+    
 
     # Show the progress bar
     if show_progress_bar:
@@ -95,7 +98,11 @@ def compute_comparison_matrix(
         pool = multiprocessing.Pool(int(os.cpu_count() / 2))
         distances = pool.map(metric, pairs)
     else:
-        distances = [metric(lhs, rhs) for lhs, rhs in pairs]
+        if args == None:
+            distances = [metric(lhs, rhs) for lhs, rhs in pairs]
+        else:
+            distances = [metric(lhs, rhs, args) for lhs, rhs in pairs]
+        
     # Initialize the distance matrix to 0
     matrix = np.zeros(shape=(len(values), len(values)))
     # Set the values of the upper triangular matrix to the distances

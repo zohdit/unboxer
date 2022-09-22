@@ -1,3 +1,5 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import warnings
 
 from steps.insights import low_level, high_level, combined

@@ -17,7 +17,7 @@ CLUSTERS_SORT_METRIC: Callable[[list], tuple] = lambda cluster: (
     else 0,
     -len(cluster)
 )
-CLUSTERS_SIMILARITY_METRIC: Callable[[Clustering, Clustering], float] = custom_similarity #intra_pairs_similarity #element_sim #custom_similarity
+CLUSTERS_SIMILARITY_METRIC: Callable[[Clustering, Clustering], float] =  custom_similarity #element_sim #custom_similarity #intra_pairs_similarity 
 
 
 def IMAGES_SIMILARITY_METRIC(lhs, rhs, threshold: float = None, max_activation: float = None, num_bins: int = 2):
@@ -31,8 +31,8 @@ def IMAGES_SIMILARITY_METRIC(lhs, rhs, threshold: float = None, max_activation: 
     #     rhs_processed = np.digitize(rhs_processed, np.linspace(0, max_activation, num_bins))
     return euclidean_similarity(lhs, rhs)
 
-def INDIVIDUAL_SIMILARITY_METRIC(lhs, rhs):
-    return manhattan_sim(lhs, rhs)
+def INDIVIDUAL_SIMILARITY_METRIC(lhs, rhs, max_manhattan):
+    return manhattan_sim(lhs, rhs, max_manhattan)
 
 HUMAN_EVALUATION_APPROACHES = [
     'Lime',

@@ -65,7 +65,7 @@ def create_model(train_data, train_labels, test_data, test_labels, name):
     print(f'Accuracy on 5s for {name}: {acc2}')
 
     # Save the classifier
-    classifier.save("out/models/"+name+".h5")
+    # classifier.save("out/models/"+name+".h5")
 
     return acc1, acc2
 
@@ -80,17 +80,10 @@ if __name__ == "__main__":
         verbose=True
     )
 
-    # train_data = train_data[:30000]
-    # train_labels = train_labels[:30000]
-
-    # test_data = np.concatenate((train_data[30000:], test_data), axis=0)
-    # test_labels = np.concatenate((train_labels[30000:], test_labels), axis=0)
-
     train_data_gs, test_data_gs = (
     tf.image.rgb_to_grayscale(train_data).numpy(),
-    tf.image.rgb_to_grayscale(test_data).numpy()
-)
+    tf.image.rgb_to_grayscale(test_data).numpy())
 
-    create_model(train_data_gs, train_labels, test_data_gs, test_labels, f"digit_classifier_test")
+    create_model(train_data_gs, train_labels, test_data_gs, test_labels, f"digit_classifier")
 
     # digit_classifier 99.24, 98.76

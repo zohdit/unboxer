@@ -1,3 +1,6 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 from functools import reduce
 from itertools import combinations
 import time
@@ -47,7 +50,7 @@ def main():
 
             # Process the feature-maps and get the dataframe
             print('Extracting the clusters data from the feature-maps mnist ...')
-            featuremaps_df = process_featuremaps_data(data, samples)
+            featuremaps_df = process_featuremaps_data(data, samples, features_combination)
 
             # Update the current data or create a new dataframe
             if os.path.isfile(FEATUREMAPS_DATA):

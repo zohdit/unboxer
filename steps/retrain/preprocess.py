@@ -15,13 +15,16 @@ def train_initial():
         rgb=USE_RGB,
         verbose=True
     )
-
+    train_data, test_data = (
+        tf.image.rgb_to_grayscale(train_data).numpy(),
+        tf.image.rgb_to_grayscale(test_data).numpy()
+    )
     mask_label = np.array(train_labels == global_values.EXPECTED_LABEL)
     train_data_digit = train_data[mask_label]
     train_label_digit = train_labels[mask_label]
     
     with open("logs/mnist/orig_acc.txt", "w") as f:
-        for ind in range(1, 6):
+        for ind in range(0, 1):
             k = 100
             # randomly select k samples from train_data of expected label only                
             selected_train_index = random.sample(range(0, len(train_data_digit)), k)

@@ -51,7 +51,7 @@ def generate_featuremap_by_data(train_data, train_labels):
 
     # features_df.to_pickle(FEATUREMAPS_DATA_RAW)
 
-    return features_df, samples
+    return features_df, samples, features
 
 
 if __name__ == "__main__":

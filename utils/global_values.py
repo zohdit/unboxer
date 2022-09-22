@@ -168,6 +168,12 @@ if MISBEHAVIOR_ONLY:
     generated_predictions = generated_predictions[generated_mask_miss]
     generated_predictions_cat = generated_predictions_cat[generated_mask_miss]
 
+    generated_data = np.concatenate((test_data, generated_data))
+    generated_data_gs = np.concatenate((test_data_gs, generated_data_gs))
+    generated_labels = np.concatenate((test_labels, generated_labels))
+    generated_predictions = np.concatenate((predictions, generated_predictions))
+    generated_predictions_cat = np.concatenate((predictions_cat, generated_predictions_cat))
+
 
 # classifier = tf.keras.models.load_model(MODEL, custom_objects={'KerasLayer': MyTokenAndPositionEmbedding, 'TransformerBlock': TransformerBlock})
 

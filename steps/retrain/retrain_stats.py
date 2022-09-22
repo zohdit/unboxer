@@ -1,3 +1,6 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 from audioop import avg
 import os
 import scipy.stats as ss
@@ -7,6 +10,9 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 import statsmodels.stats.power as pw
+from IPython.display import display
+
+
 
 # https://gist.github.com/jacksonpradolima/f9b19d65b7f16603c837024d5f8c8a65
 def VD_A(treatment, control):
@@ -25,8 +31,8 @@ def VD_A(treatment, control):
     m = len(treatment)
     n = len(control)
 
-    # if m != n:
-    #     raise ValueError("Data must have the same length")
+    if m != n:
+        raise ValueError("Data must have the same length")
 
     r = ss.rankdata(treatment + control)
     r1 = sum(r[0:m])
@@ -84,39 +90,48 @@ def calculate_effect_size(treatment, treatment_name, control, control_name):
 
 
 if __name__ == "__main__":
-    dataset_folder = "out/new"
+    RETRAIN_DATA = "logs/mnist"
     df = pd.DataFrame()
     tools = []
     accs = []
     list_accs = []
+    for subdir, dirs, files in os.walk(RETRAIN_DATA, followlinks=False):
+        # Consider only the files that match the pattern
+        for sample_file in [os.path.join(subdir, f) for f in files if f.endswith(".npy")]:       
+            data = np.load(sample_file)   
+            old_data = np.load(sample_file.replace("logs_1", "logs"))
+            np.save(sample_file.replace("logs/mnist", "logs/mnist/retrain"), np.concatenate((old_data, data)))
+            # if "fm" in sample_file:
+            #     tool = "Feature map"
+            # if "lime" in sample_file:
+            #     tool = "Lime"
+            # if "ig" in sample_file:
+            #     tool = "IntegratedGradients"
+            # if "random" in sample_file:
+            #     tool = "Random"
+            # if "both" in sample_file:
+            #     tool = "Combined"
+
+            # tools.append(tool)
+            # accs.append(data)
+            # print(tool)
+            # print(np.average(data))
+            # for a in data:
+            #     list_accs.append((tool, a))
     
-    for data_file in list_accs:        
-        if "featuremap" in data_file[0]:
-            tool = "Feature map 5x5"
-        if "lime" in data_file[0]:
-            tool = "Lime"
-        if "integratedgradients" in data_file[0]:
-            tool = "i=IntegratedGradients"
-        if "random" in data_file[0]:
-            tool = "Random"
-        if "both" in data_file[0]:
-            tool = "Combined"
+    # list_of_tuples = list(zip(tools, accs))
+    
+    # import matplotlib.pyplot as plt
 
-            tools.append(tool)
-            accs.append(data_file[1])
-            print(tool)
-            print(np.average(data))
-        
-    list_of_tuples = list(zip(tools, accs))
-  
-
-    df = pd.DataFrame(list_of_tuples, columns=['tool', 'data'])        
-
+    # df = pd.DataFrame(list_of_tuples, columns=['tool', 'data'])    
+    # plot_df = pd.DataFrame(list_accs, columns=['tool', 'data'])
+    # boxplot = plot_df.boxplot(by='tool', column =['data'], grid = False)
+    # plt.savefig("logs/mnist/retrain_boxplot.png")
           
-    for treatment_name, control_name in it.combinations(df["tool"].unique(), 2):
-            treatment = list(df[df["tool"] == treatment_name]["data"])[0]
-            control = list(df[df["tool"] == control_name]["data"])[0]
+    # for treatment_name, control_name in it.combinations(df["tool"].unique(), 2):
+    #         treatment = list(df[df["tool"] == treatment_name]["data"])[0]
+    #         control = list(df[df["tool"] == control_name]["data"])[0]
 
-            # Compute the statistics
-            # _log_raw_statistics(treatment, treatment_name, control, control_name)
-            calculate_effect_size(treatment, treatment_name, control, control_name)
+    #         # Compute the statistics
+    #         _log_raw_statistics(treatment, treatment_name, control, control_name)
+    #         calculate_effect_size(treatment, treatment_name, control, control_name)

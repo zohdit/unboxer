@@ -34,11 +34,12 @@ def show_comparison_matrix(
     :return: The data for the distance matrix, the figure and the axis
     """
 
-    # Get the distance matrix
+    # Get the matrix
     matrix = compute_comparison_matrix(
         values=values,
         approaches=approaches,
         metric=metric,
+        args=None,
         show_progress_bar=show_progress_bar,
         multi_process=multi_process
     )

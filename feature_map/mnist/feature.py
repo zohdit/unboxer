@@ -1,8 +1,9 @@
 import numpy as np
 
-from config.config_featuremaps import NUM_CELLS
+from config.config_featuremaps import FEATUREMAPS_CLUSTERING_MODE, NUM_CELLS
 from feature_map.mnist.feature_simulator import FeatureSimulator
 from feature_map.mnist.sample import Sample
+from utils.featuremaps.FeaturemapsClusteringMode import FeaturemapsClusteringMode
 
 
 class Feature:
@@ -16,7 +17,10 @@ class Feature:
         self.max_value = max_value
         # get the name for the corresponding feature simulator
         self.feature_simulator = dict(FeatureSimulator.get_simulators().items())[feature_name].__name__
-        self.num_cells = max_value - min_value
+        if FEATUREMAPS_CLUSTERING_MODE == FeaturemapsClusteringMode.CLUSTERED:
+            self.num_cells = max_value - min_value
+        else:
+            self.num_cells = NUM_CELLS
         self.original_bins = np.linspace(min_value, max_value, self.num_cells)
 
     def feature_descriptor(self, sample: Sample):

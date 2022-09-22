@@ -11,7 +11,7 @@ from utils.stats import compute_comparison_matrix
 from config.config_general import INDIVIDUAL_SIMILARITY_METRIC
 from config.config_heatmaps import CLUSTERING_TECHNIQUE
 
-def process_featuremaps_data(df, samples):
+def process_featuremaps_data(df, samples, features):
     """
     Process the featuremaps data and prepare it for the next steps
     :param df: The data extracted for the featuremaps
@@ -44,10 +44,14 @@ def process_featuremaps_data(df, samples):
         complete_df = merged_df 
     
     elif FEATUREMAPS_CLUSTERING_MODE == FeaturemapsClusteringMode.CLUSTERED:
+        max_manhattan = 0
+        for feature in features:
+            max_manhattan = max_manhattan + feature.num_cells
+
         original_df['mode'] = 'clustered'
         original_df['clusters_list'] = original_df['clusters'].apply(__get_clusters_list)
         complete_df = pd.DataFrame.copy(original_df, deep=True) 
-        complete_df['clusters_list'] = complete_df['clusters'].apply(__recluster, args=[samples])
+        complete_df['clusters_list'] = complete_df['clusters'].apply(__recluster, args=[samples, max_manhattan])
 
     else:
         original_df['mode'] = 'original'
@@ -57,21 +61,27 @@ def process_featuremaps_data(df, samples):
     complete_df = complete_df.drop(columns='clusters')
     complete_df = complete_df.rename({'clusters_list': 'clusters'}, axis=1)
     complete_df = complete_df.sort_values(['map_size', 'approach', 'mode']).reset_index(drop=True)
+    pd.set_option('display.max_colwidth', None)
+    complete_df['num_clusters'] = complete_df['clusters'].apply(len)
+    display(complete_df['num_clusters'])
     return complete_df
 
-def __recluster(clusters_matrix: np.ndarray, samples: list):
+def __recluster(clusters_matrix: np.ndarray, samples: list, max_manhattan: int):
     # Compute the similarity matrix for the contributions
     similarity_matrix = compute_comparison_matrix(
             samples,
             approaches=[],
             metric=INDIVIDUAL_SIMILARITY_METRIC,
+            args = max_manhattan,
             show_progress_bar=True,
             multi_process=False
     )
     # Cluster the individuals using the similarity matrix
+    # sometime affinity gives only one cluster!
     _clusters = CLUSTERING_TECHNIQUE(affinity='precomputed').fit_predict(similarity_matrix)
+    while len(Clustering().from_membership_list(_clusters).to_cluster_list()) == 1:
+        _clusters = CLUSTERING_TECHNIQUE(affinity='precomputed').fit_predict(similarity_matrix)
     cluster_list = Clustering().from_membership_list(_clusters).to_cluster_list()
-    print(cluster_list)
     return np.array(cluster_list)
 
 

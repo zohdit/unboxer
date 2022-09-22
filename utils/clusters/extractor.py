@@ -63,6 +63,7 @@ def get_central_elements(
         values=cluster_elements,
         approaches=[],
         metric=metric,
+        args=None,
         show_progress_bar=show_progress_bar,
         multi_process=False
     )

@@ -108,6 +108,8 @@ def select_data_by_cluster(df, train_data, train_labels, k):
         # there is only one row
         clusters = columnSeriesObj.values[0]
 
+    print("Clusters:")
+    print(len(clusters))
     backup_array = clusters
     while len(selected_indices) < k:
         for cluster in backup_array:

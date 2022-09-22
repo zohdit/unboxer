@@ -60,7 +60,7 @@ def custom_similarity(lhs: Clustering, rhs: Clustering) -> float:
         # if cluster is singletoin imputrity is 0
         if len(cluster) == 1:
             impurity = 0
-        # otherwise impurity is sum of manhattan distances 
+        # otherwise impurity is  
         else:           
             p_total = list(set(cluster)) 
             sigma_p_color = 0
@@ -71,6 +71,7 @@ def custom_similarity(lhs: Clustering, rhs: Clustering) -> float:
 
         gini_impurity = impurity + gini_impurity
     
-    return 1 - gini_impurity/len(clone_rhs)    
+    # [0:different, 1:same)
+    return 1 - (gini_impurity/len(clone_rhs))    
 
 

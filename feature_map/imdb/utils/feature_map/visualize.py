@@ -21,53 +21,39 @@ def visualize_map(name, features, samples):
     Returns:
     """
     print('Generating the featuremaps ...')
-
-    # Create one visualization for each pair of self.axes selected in order
     data = []
-    map_dimensions = [
-        min(3, map_dimension) for map_dimension
-        in (MAP_DIMENSIONS if type(MAP_DIMENSIONS) is list else [MAP_DIMENSIONS])
-    ]
-    # Compute all the 2d and 3d feature combinations
-    features_combinations = reduce(
-        lambda acc, comb: acc + comb,
-        [
-            list(combinations(features, n_features))
-            for n_features in map_dimensions]
-    )
-    for features_combination in features_combinations:
-        start_time = time.time()
-        features_comb_str = '+'.join([feature.feature_name for feature in features_combination])
-        map_size_str = f'{NUM_CELLS}x{NUM_CELLS}'
-        # Place the values over the map
-        _, coverage_data, misbehavior_data, clusters = compute_map(features_combination, samples)
-        # Handle the case of 3d maps
-        if len(features_combination) == 3:
-            # Visualize the map
-            fig, ax = visualize_3d_map(coverage_data, misbehavior_data)
-        # Handle the case of 2d maps
-        else:
-            # Visualize the map
-            fig, ax = visualize_2d_map(coverage_data, misbehavior_data)
+    start_time = time.time()
+    features_comb_str = '+'.join([feature.feature_name for feature in features_combination])
+    map_size_str = f'{NUM_CELLS}x{NUM_CELLS}x{NUM_CELLS}'
+    # Place the values over the map
+    _, coverage_data, misbehavior_data, clusters, samples = compute_map(features_combination, samples)
+    # Handle the case of 3d maps
+    if len(features) == 3:
+        # Visualize the map
+        fig, ax = visualize_3d_map(coverage_data, misbehavior_data)
+    # Handle the case of 2d maps
+    else:
+        # Visualize the map
+        fig, ax = visualize_2d_map(coverage_data, misbehavior_data)
 
-        # Set the style
-        fig.suptitle(f'Feature map: digit {EXPECTED_LABEL}', fontsize=16)
-        ax.set_xlabel(features_combination[0].feature_name)
-        ax.set_ylabel(features_combination[1].feature_name)
-        if len(features_combination) == 3:
-            ax.set_zlabel(features_combination[2].feature_name)
-        # Export the figure
-        save_figure(fig, f'out/featuremaps/{name}_{EXPECTED_LABEL}_{map_size_str}_{features_comb_str}')
+    # Set the style
+    fig.suptitle(f'Feature map: digit {EXPECTED_LABEL}', fontsize=16)
+    ax.set_xlabel(features[0].feature_name)
+    ax.set_ylabel(features[1].feature_name)
+    if len(features) == 3:
+        ax.set_zlabel(features[2].feature_name)
+    # Export the figure
+    save_figure(fig, f'out/featuremaps/{name}_{EXPECTED_LABEL}_{map_size_str}_{features_comb_str}')
 
-        # Record the data
-        data.append({
-            'approach': features_comb_str,
-            'map_size': NUM_CELLS,
-            'map_time': time.time() - start_time,
-            'clusters': clusters
-        })
+    # Record the data
+    data.append({
+        'approach': features_comb_str,
+        'map_size': NUM_CELLS,
+        'map_time': time.time() - start_time,
+        'clusters': clusters
+    })
     # plt.show()
-    return data
+    return data, samples
 
 
 def visualize_3d_map(coverage_data, misbehavior_data):
@@ -110,12 +96,19 @@ def visualize_2d_map(coverage_data, misbehavior_data):
     return fig, ax
 
 
+# def unpack_plot_data(data: np.ndarray):
+#     # Get the indexes where the values are not zero
+#     indexes = [np.array(idx) for idx in data.nonzero()]
+#     # Get the values corresponding to each triple of indexes
+#     values = np.array([data[idx] for idx in zip(*indexes)])
+#     x = np.array([idx[0] for idx in zip(*indexes)])
+#     y = np.array([idx[1] for idx in zip(*indexes)])
+#     z = np.array([idx[2] for idx in zip(*indexes)])
+#     return x, y, z, values
+
 def unpack_plot_data(data: np.ndarray):
     # Get the indexes where the values are not zero
     indexes = [np.array(idx) for idx in data.nonzero()]
     # Get the values corresponding to each triple of indexes
     values = np.array([data[idx] for idx in zip(*indexes)])
-    x = np.array([idx[0] for idx in zip(*indexes)])
-    y = np.array([idx[1] for idx in zip(*indexes)])
-    z = np.array([idx[2] for idx in zip(*indexes)])
-    return x, y, z, values
+    return *indexes, values
