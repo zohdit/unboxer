@@ -26,5 +26,5 @@ def combined_distance_matrix():
     )
     display(df[['approach','num_clusters']])
     display(df[['approach','num_clusters']].groupby('approach').mean())
-    fig.suptitle('Distance matrix for the low-level and high-level approaches')
+    fig.suptitle('Similarity matrix for the low-level and high-level approaches')
     save_figure(fig, f'out/combined/distance_matrix')

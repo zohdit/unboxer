@@ -25,18 +25,18 @@ def retrain_by_heatmap_provided_explanations():
         verbose=True
     )
     test_data = tf.image.rgb_to_grayscale(test_data).numpy()
+    part = 0
+    classifier = tf.keras.models.load_model(f"out/models/orig_model_{part}.h5")
+
+    generate_heatmaps_by_classifier(classifier)
 
     accs1 = []
     accs2 = []
     with open("logs/mnist/hm_acc.txt", "w") as f:
         # repeat the experiment n times
-        part = 0
+        
         for rep in range(0, 30):
             f.write(f"Run {rep}: \n")
-
-            classifier = tf.keras.models.load_model(f"out/models/orig_model_{part}.h5")
-
-            generate_heatmaps_by_classifier(classifier)
 
             remaining_train_data = np.load(f"logs/mnist/retrain_data/remaining_data_{part}.npy")
             remaining_train_labels = np.load(f"logs/mnist/retrain_data/remaining_labels_{part}.npy")

@@ -97,41 +97,43 @@ if __name__ == "__main__":
     list_accs = []
     for subdir, dirs, files in os.walk(RETRAIN_DATA, followlinks=False):
         # Consider only the files that match the pattern
-        for sample_file in [os.path.join(subdir, f) for f in files if f.endswith(".npy")]:       
+        for sample_file in [os.path.join(subdir, f) for f in files if f.endswith("all.npy")]:       
             data = np.load(sample_file)   
-            old_data = np.load(sample_file.replace("logs_1", "logs"))
-            np.save(sample_file.replace("logs/mnist", "logs/mnist/retrain"), np.concatenate((old_data, data)))
-            # if "fm" in sample_file:
-            #     tool = "Feature map"
-            # if "lime" in sample_file:
-            #     tool = "Lime"
-            # if "ig" in sample_file:
-            #     tool = "IntegratedGradients"
-            # if "random" in sample_file:
-            #     tool = "Random"
-            # if "both" in sample_file:
-            #     tool = "Combined"
+            if "fm_cluster" in sample_file:
+                tool = "FM Clustered"
+            if "fm_orig" in sample_file:
+                tool = "FM"
+            if "lime" in sample_file:
+                tool = "Lime"
+            if "hm_ig" in sample_file:
+                tool = "IG"
+            if "random" in sample_file:
+                tool = "Random"
+            if "orig_ig" in sample_file:
+                tool = "Combined IG"
+            if "orig_lime" in sample_file:
+                tool = "Combined Lime"
 
-            # tools.append(tool)
-            # accs.append(data)
-            # print(tool)
-            # print(np.average(data))
-            # for a in data:
-            #     list_accs.append((tool, a))
-    
-    # list_of_tuples = list(zip(tools, accs))
-    
-    # import matplotlib.pyplot as plt
+            tools.append(tool)
+            accs.append(data)
 
-    # df = pd.DataFrame(list_of_tuples, columns=['tool', 'data'])    
-    # plot_df = pd.DataFrame(list_accs, columns=['tool', 'data'])
-    # boxplot = plot_df.boxplot(by='tool', column =['data'], grid = False)
-    # plt.savefig("logs/mnist/retrain_boxplot.png")
+            for a in data:
+                list_accs.append((tool, a))
+    
+    list_of_tuples = list(zip(tools, accs))
+    
+    import matplotlib.pyplot as plt
+
+    df = pd.DataFrame(list_of_tuples, columns=['tool', 'data'])    
+    plot_df = pd.DataFrame(list_accs, columns=['tool', 'data'])
+    boxplot = plot_df.boxplot(by='tool', column =['data'], grid = False)
+    plt.savefig("logs/mnist/retrain_boxplot_all.png")
           
-    # for treatment_name, control_name in it.combinations(df["tool"].unique(), 2):
-    #         treatment = list(df[df["tool"] == treatment_name]["data"])[0]
-    #         control = list(df[df["tool"] == control_name]["data"])[0]
+    for treatment_name, control_name in it.combinations(df["tool"].unique(), 2):
+            treatment = list(df[df["tool"] == treatment_name]["data"])[0]
+            control = list(df[df["tool"] == control_name]["data"])[0]
 
-    #         # Compute the statistics
-    #         _log_raw_statistics(treatment, treatment_name, control, control_name)
-    #         calculate_effect_size(treatment, treatment_name, control, control_name)
+            # Compute the statistics
+            # _log_raw_statistics(treatment, treatment_name, control, control_name)
+            calculate_effect_size(treatment, treatment_name, control, control_name)
+

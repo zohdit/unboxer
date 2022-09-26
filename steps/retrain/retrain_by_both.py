@@ -2,7 +2,7 @@ from itertools import product
 import random
 import numpy as np
 from steps.process_heatmaps import APPROACHES, get_perplexity
-from steps.retrain.retrain_by_heatmaps import generate_clusters_by_heatmap, generate_clusters_by_heatmap_indices
+from steps.retrain.retrain_by_heatmaps import generate_clusters_by_heatmap_indices
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
 from IPython.display import display
@@ -31,7 +31,7 @@ def retrain_by_both():
     test_data = tf.image.rgb_to_grayscale(test_data).numpy()
     accs1 = []
     accs2 = []
-    with open("logs/mnist/both_acc_100.txt", "w") as f:
+    with open("logs/mnist/both_acc.txt", "w") as f:
         # repeat the experiment n times
         part = 0
         for rep in range(0, 30):

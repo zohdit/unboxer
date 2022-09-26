@@ -124,7 +124,6 @@ def main():
         ].groupby('approach').first().reset_index(drop=False)
         best_configs_df.to_pickle(BEST_CONFIGURATIONS)
 
-    display(BEST_CONFIGURATIONS)
     return df_sampled
 
 
