@@ -150,3 +150,15 @@ def missing(s: pd.Series):
     :return: The number of NaN values in a series
     """
     return s.isnull().sum()
+
+from feature_map.imdb.predictor import Predictor
+
+
+def text_to_vec(text):
+    """
+    converst text to vec using bag of words
+    :param text: The text to convert
+    :return: The generated vector
+    """
+    text_matrix = Predictor.tokenizer.texts_to_matrix(text, mode="binary")
+    return text_matrix

@@ -1,14 +1,16 @@
+from cgi import test
+import json
 import os
 import pickle
 import warnings
-from config.config_featuremaps import VOCAB_SIZE
+from config.config_featuremaps import INPUT_MAXLEN, VOCAB_SIZE
 
 import numpy as np
 import tensorflow as tf
 from keras.utils.np_utils import to_categorical
 
 from config.config_data import DATASET_LOADER, EXPECTED_LABEL, USE_RGB, MISBEHAVIOR_ONLY
-from config.config_dirs import MNIST_INPUTS, MODEL
+from config.config_dirs import IMDB_INPUTS, MNIST_INPUTS, MODEL
 from utils.dataset import get_train_test_data
 
 
@@ -101,114 +103,182 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Get the classifier
-classifier = tf.keras.models.load_model(MODEL)
+# classifier = tf.keras.models.load_model(MODEL)
 
+
+# # Get the train and test data and labels
+# (train_data, train_labels), (test_data, test_labels) = get_train_test_data(
+#     dataset_loader=DATASET_LOADER,
+#     rgb=USE_RGB,
+#     verbose=False
+# )
+
+# train_data_gs, test_data_gs = (
+#     tf.image.rgb_to_grayscale(train_data).numpy(),
+#     tf.image.rgb_to_grayscale(test_data).numpy()
+# )
+
+# # Get the predictions
+# try:
+#     predictions = classifier.predict(test_data).argmax(axis=-1)
+# except ValueError:
+#     # The model expects grayscale images
+#     predictions = classifier.predict(test_data_gs).argmax(axis=-1)
+# predictions_cat = to_categorical(predictions)
+
+# generated_data = []
+
+# # read generated inputs
+# for subdir, dirs, files in os.walk(MNIST_INPUTS, followlinks=False):
+#     # Consider only the files that match the pattern
+#     for sample_file in [os.path.join(subdir, f) for f in files if f.endswith(".npy")]:
+#         generated_data.append(np.load(sample_file))
+
+# generated_data = np.array(generated_data)
+
+# generated_labels = np.full(generated_data.shape[0], EXPECTED_LABEL)
+
+
+# generated_data_gs = generated_data.squeeze()
+# generated_data_gs = tf.expand_dims(generated_data_gs, -1)
+# # Get the predictions
+# try:
+#     generated_predictions = classifier.predict(generated_data).argmax(axis=-1)
+# except ValueError:
+#     # The model expects grayscale images
+#     generated_predictions = classifier.predict(generated_data_gs).argmax(axis=-1)
+# generated_predictions_cat = to_categorical(generated_predictions)
+
+
+# generated_data = tf.image.grayscale_to_rgb(tf.expand_dims(generated_data.squeeze(), -1)).numpy()
+# # Get the mask for the data
+# mask_miss_mnist = np.array(test_labels != predictions)
+
+# generated_mask_miss = np.array(generated_labels != generated_predictions)
+
+# # Filter the data if configured
+# if MISBEHAVIOR_ONLY:
+#     test_data = test_data[mask_miss_mnist]
+#     test_data_gs = test_data_gs[mask_miss_mnist]
+#     test_labels = test_labels[mask_miss_mnist]
+#     predictions = predictions[mask_miss_mnist]
+#     predictions_cat = predictions_cat[mask_miss_mnist]
+
+#     generated_data = generated_data[generated_mask_miss]
+#     generated_data_gs = generated_data_gs[generated_mask_miss]
+#     generated_labels = generated_labels[generated_mask_miss]
+#     generated_predictions = generated_predictions[generated_mask_miss]
+#     generated_predictions_cat = generated_predictions_cat[generated_mask_miss]
+
+#     generated_data = np.concatenate((test_data, generated_data))
+#     generated_data_gs = np.concatenate((test_data_gs, generated_data_gs))
+#     generated_labels = np.concatenate((test_labels, generated_labels))
+#     generated_predictions = np.concatenate((predictions, generated_predictions))
+#     generated_predictions_cat = np.concatenate((predictions_cat, generated_predictions_cat))
+
+
+classifier = tf.keras.models.load_model(MODEL, custom_objects={'KerasLayer': MyTokenAndPositionEmbedding, 'TransformerBlock': TransformerBlock})
 
 # Get the train and test data and labels
-(train_data, train_labels), (test_data, test_labels) = get_train_test_data(
-    dataset_loader=DATASET_LOADER,
-    rgb=USE_RGB,
-    verbose=False
-)
 
-train_data_gs, test_data_gs = (
-    tf.image.rgb_to_grayscale(train_data).numpy(),
-    tf.image.rgb_to_grayscale(test_data).numpy()
-)
+from datasets import load_dataset
+train_ds = load_dataset('imdb', cache_dir=f"in/data", split='train')
+train_data, train_labels = train_ds['text'], train_ds['label']
 
-# Get the predictions
-try:
-    predictions = classifier.predict(test_data).argmax(axis=-1)
-except ValueError:
-    # The model expects grayscale images
-    predictions = classifier.predict(test_data_gs).argmax(axis=-1)
-predictions_cat = to_categorical(predictions)
+test_ds = load_dataset('imdb', cache_dir=f"in/data", split='test')
+test_data, test_labels = test_ds['text'], test_ds['label']
+
+
+
+# tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=VOCAB_SIZE)
+# tokenizer.fit_on_texts(train_data)
+
+
+# import pickle
+
+# # saving
+# with open('in/models/tokenizer.pickle', 'wb') as handle:
+#     pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+# x_train = tokenizer.texts_to_sequences(train_data)
+# x_test = tokenizer.texts_to_sequences(test_data)
+
+# x_train = tf.keras.preprocessing.sequence.pad_sequences(x_train, maxlen=INPUT_MAXLEN)
+# x_test = tf.keras.preprocessing.sequence.pad_sequences(x_test, maxlen=INPUT_MAXLEN)
+
+# DATASET_DIR = "in/data"
+
+# if not os.path.exists(f"{DATASET_DIR}/imdb-cached"):
+#     os.makedirs(f"{DATASET_DIR}/imdb-cached")
+#     np.save(f"{DATASET_DIR}/imdb-cached/x_train.npy", x_train)
+#     np.save(f"{DATASET_DIR}/imdb-cached/y_train.npy", train_labels)
+#     np.save(f"{DATASET_DIR}/imdb-cached/x_test.npy", x_test)
+#     np.save(f"{DATASET_DIR}/imdb-cached/y_test.npy", test_labels)
+
+
+train_data_padded = np.load(f"in/data/imdb-cached/x_train.npy")
+train_labels = np.load(f"in/data/imdb-cached/y_train.npy")
+test_data_padded = np.load(f"in/data/imdb-cached/x_test.npy")
+test_data_padded = test_data_padded
+test_labels = np.load(f"in/data/imdb-cached/y_test.npy")
+test_labels = test_labels
+test_labels_cat = to_categorical(test_labels, 2)
+predictions = np.load("in/data/imdb-cached/y_prediction.npy")
+
+
+# predictions = classifier.predict(test_data_padded).argmax(axis=-1)
+# np.save(f"{DATASET_DIR}/imdb-cached/y_prediction.npy", predictions)
+
+predictions_cat = to_categorical(predictions, 2)
 
 generated_data = []
 
 # read generated inputs
-for subdir, dirs, files in os.walk(MNIST_INPUTS, followlinks=False):
+for subdir, dirs, files in os.walk(IMDB_INPUTS, followlinks=False):
     # Consider only the files that match the pattern
-    for sample_file in [os.path.join(subdir, f) for f in files if f.endswith(".npy")]:
-        generated_data.append(np.load(sample_file))
+    for sample_file in [os.path.join(subdir, f) for f in files if f.endswith(".json")]:
+            with open(sample_file, "r") as json_file:           
+                input_data = json.load(json_file)
+                generated_data.append(input_data["text"])
+
 
 generated_data = np.array(generated_data)
-
 generated_labels = np.full(generated_data.shape[0], EXPECTED_LABEL)
 
+with open('in/models/tokenizer.pickle', 'rb') as handle:
+    tokenizer = pickle.load(handle)
+x_generated = tokenizer.texts_to_sequences(generated_data)
+generated_data_padded = tf.keras.preprocessing.sequence.pad_sequences(x_generated, maxlen=INPUT_MAXLEN)
 
-generated_data_gs = generated_data.squeeze()
-generated_data_gs = tf.expand_dims(generated_data_gs, -1)
-# Get the predictions
-try:
-    generated_predictions = classifier.predict(generated_data).argmax(axis=-1)
-except ValueError:
-    # The model expects grayscale images
-    generated_predictions = classifier.predict(generated_data_gs).argmax(axis=-1)
-generated_predictions_cat = to_categorical(generated_predictions)
-
-
-generated_data = tf.image.grayscale_to_rgb(tf.expand_dims(generated_data.squeeze(), -1)).numpy()
 # Get the mask for the data
-mask_miss_mnist = np.array(test_labels != predictions)
+predictions = np.array(predictions)
+mask_miss = np.array(test_labels != predictions)
+predictions_cat = np.array(predictions_cat)
+test_data = np.array(test_data)
 
+generated_predictions = classifier.predict(generated_data_padded).argmax(axis=1)
+
+generated_predictions_cat = to_categorical(generated_predictions, 2)
 generated_mask_miss = np.array(generated_labels != generated_predictions)
 
 # Filter the data if configured
 if MISBEHAVIOR_ONLY:
-    test_data = test_data[mask_miss_mnist]
-    test_data_gs = test_data_gs[mask_miss_mnist]
-    test_labels = test_labels[mask_miss_mnist]
-    predictions = predictions[mask_miss_mnist]
-    predictions_cat = predictions_cat[mask_miss_mnist]
+    test_data = test_data[mask_miss]
+    test_data = np.array(test_data).squeeze()
+    test_data_padded = test_data_padded[mask_miss]
+    test_labels = test_labels[mask_miss]
+    predictions = predictions[mask_miss]
+    predictions_cat = predictions_cat[mask_miss]
 
     generated_data = generated_data[generated_mask_miss]
-    generated_data_gs = generated_data_gs[generated_mask_miss]
+    generated_data_padded = generated_data_padded[generated_mask_miss]
     generated_labels = generated_labels[generated_mask_miss]
     generated_predictions = generated_predictions[generated_mask_miss]
     generated_predictions_cat = generated_predictions_cat[generated_mask_miss]
 
     generated_data = np.concatenate((test_data, generated_data))
-    generated_data_gs = np.concatenate((test_data_gs, generated_data_gs))
+    generated_data_padded = np.concatenate((test_data_padded, generated_data_padded))
     generated_labels = np.concatenate((test_labels, generated_labels))
     generated_predictions = np.concatenate((predictions, generated_predictions))
     generated_predictions_cat = np.concatenate((predictions_cat, generated_predictions_cat))
-
-
-# classifier = tf.keras.models.load_model(MODEL, custom_objects={'KerasLayer': MyTokenAndPositionEmbedding, 'TransformerBlock': TransformerBlock})
-
-# Get the train and test data and labels
-
-# from datasets import load_dataset
-# train_ds = load_dataset('imdb', cache_dir=f"in/data", split='train')
-# train_data, train_label = train_ds['text'], train_ds['label']
-
-# test_ds = load_dataset('imdb', cache_dir=f"in/data", split='test')
-# test_data, test_labels = test_ds['text'], test_ds['label']
-
-# train_data_padded = np.load(f"in/data/imdb-cached/x_train.npy")
-# train_labels = np.load(f"in/data/imdb-cached/y_train.npy")
-# test_data_padded = np.load(f"in/data/imdb-cached/x_test.npy")
-# test_labels = np.load(f"in/data/imdb-cached/y_test.npy")
-# predictions = np.load("in/data/imdb-cached/y_prediction.npy")
-
-
-# predictions = classifier.predict(test_data_padded).argmax(axis=-1)
-
-
-# predictions_cat = to_categorical(predictions, 2)
-
-# # Get the mask for the data
-# predictions = np.array(predictions)
-# mask_miss = np.array(test_labels != predictions)
-# predictions_cat = np.array(predictions_cat)
-# test_data = np.array(test_data)
-
-# # Filter the data if configured
-# if MISBEHAVIOR_ONLY:
-#     test_data = test_data[mask_miss]
-#     test_data_padded = test_data_padded[mask_miss]
-#     test_labels = test_labels[mask_miss]
-#     predictions = predictions[mask_miss]
-#     predictions_cat = predictions_cat[mask_miss]
-

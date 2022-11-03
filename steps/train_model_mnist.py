@@ -84,6 +84,6 @@ if __name__ == "__main__":
     tf.image.rgb_to_grayscale(train_data).numpy(),
     tf.image.rgb_to_grayscale(test_data).numpy())
 
-    create_model(train_data_gs, train_labels, test_data_gs, test_labels, f"digit_classifier")
+    # create_model(train_data_gs, train_labels, test_data_gs, test_labels, f"digit_classifier")
 
     # digit_classifier 99.24, 98.76

@@ -26,9 +26,8 @@ def compare_approaches(
     data = []
     df = pd.DataFrame()
     # bar := 
-    for idx, approach in (tqdm(list(enumerate(approaches)))):
-        # bar.set_description(f'Comparing the approaches ({approach})')
-        print((f'Comparing the approaches ({approach})'))
+    for idx, approach in (bar := tqdm(list(enumerate(approaches)))):
+        bar.set_description(f'Comparing the approaches ({approach})')
         # Extract some information about the current approach
         explainer = approach.get_explainer()
         dimensionality_reduction_techniques = approach.get_dimensionality_reduction_techniques()
@@ -153,8 +152,8 @@ def compare_approaches_by_index(
     """
     # Iterate over the approaches in the list
     data = []
-    for idx, approach in (tqdm(list(enumerate(approaches)))):
-        # bar.set_description(f'Comparing the approaches ({approach})')
+    for idx, approach in (bar:=tqdm(list(enumerate(approaches)))):
+        bar.set_description(f'Comparing the approaches ({approach})')
         # Extract some information about the current approach
         explainer = approach.get_explainer()
         clustering_technique = approach.get_clustering_technique()

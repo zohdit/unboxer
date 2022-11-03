@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from config.config_dirs import FEATUREMAPS_DATA, HEATMAPS_DATA
+from config.config_dirs import FEATUREMAPS_DATA, HEATMAPS_DATA, HEATMAPS_DATA_RAW
 from utils import global_values
 from utils.dataframes.extractor import get_average_popularity_score
 from IPython.display import display
@@ -28,19 +28,21 @@ def preprocess_featuremaps_data():
 def preprocess_heatmaps_data():
     # Read the heatmaps data
     try:
-        df = pd.read_pickle(HEATMAPS_DATA)
+        df = pd.read_pickle(HEATMAPS_DATA_RAW)
     except ValueError:
         return pd.DataFrame()
     # Make the naming consistent with the featuremaps
     df = df.rename(columns={'explainer': 'approach'})
     df['time'] = df['time_clustering'] + df['time_contributions']
+    pd.set_option('display.max_colwidth', None)
+    display(df)
     df['clustering_mode'] = df.apply(lambda row: f'{row["clustering_technique"]}({row["clustering_mode"]})', axis=1)
 
     # Keep the column of interest
     df = df[
         ['approach', 'clustering_mode', 'time', 'clusters', 'contributions']]
     df = df.rename(columns={'explainer': 'approach'})
-
+    
     return df
 
 

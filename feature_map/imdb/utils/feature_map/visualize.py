@@ -23,10 +23,10 @@ def visualize_map(name, features, samples):
     print('Generating the featuremaps ...')
     data = []
     start_time = time.time()
-    features_comb_str = '+'.join([feature.feature_name for feature in features_combination])
+    features_comb_str = '+'.join([feature.feature_name for feature in features])
     map_size_str = f'{NUM_CELLS}x{NUM_CELLS}x{NUM_CELLS}'
     # Place the values over the map
-    _, coverage_data, misbehavior_data, clusters, samples = compute_map(features_combination, samples)
+    _, coverage_data, misbehavior_data, clusters, samples = compute_map(features, samples)
     # Handle the case of 3d maps
     if len(features) == 3:
         # Visualize the map

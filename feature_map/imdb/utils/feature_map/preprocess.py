@@ -21,9 +21,9 @@ def extract_samples_and_stats():
     data_samples = []
 
     filtered = list(filter(lambda t: t[1] == EXPECTED_LABEL, zip(
-        global_values.test_data,
-        global_values.test_labels,
-        global_values.predictions
+        global_values.generated_data,
+        global_values.generated_labels,
+        global_values.generated_predictions
     )))
     for text, label, prediction in tqdm(filtered, desc='Extracting the samples and the statistics'):
         sample = Sample(text=text, label=label, prediction=prediction)

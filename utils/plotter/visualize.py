@@ -182,11 +182,81 @@ def visualize_cluster_images(
         axx, idx = t
         # Show the image
         image = images[idx]
-        axx.imshow(
-            np.ma.masked_equal(image, 0).filled(np.nan),
+        axx.imshow( 
+            image,
+            # np.ma.masked_equal(image, 0).filled(np.nan),
             cmap='gray_r',
             extent=(0, image.shape[0], image.shape[1], 0)
         )
+        # Show the overlay
+        if overlays is not None:
+            try:
+                axx.imshow(overlays[idx],
+                    # np.ma.masked_equal(overlays[idx], 0).filled(np.nan),
+                    cmap='Reds',
+                    alpha=.7,
+                    extent=(0, image.shape[0], image.shape[1], 0)
+                )
+            except IndexError:
+                # No overlay (featuremaps) -> do nothing
+                pass
+        # Set the title
+        if labels == 'auto':
+            axx.set_title(chr(ord('A') + inc))
+        elif labels is not None:
+            axx.set_title(labels[idx]) if labels is not None else None
+    # Remove ticks and labels
+    for axx in ax_list:
+        axx.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
+
+    return fig, ax
+
+
+
+def visualize_cluster_texts(
+        cluster: np.ndarray,
+        texts: np.ndarray,
+        labels=None,
+        overlays: np.ndarray = None
+):
+    """
+    Show a sample of images in one cluster as a grid
+    :param cluster: The cluster
+    :param texts: The images
+    :param labels: The titles for the images or `auto` for incremental labels
+    :param overlays: The overlays
+    :return: The figure and the axis for the image
+    """
+    # Rows and cols so that the grid is squared
+    n_cols = 1 # math.ceil(len(cluster) ** .5)
+    n_rows = 1 # math.ceil(len(cluster) / n_cols)
+    # Create the figure
+    fig, ax = plt.subplots(n_rows, n_cols, figsize=(100 * n_cols, 100 * n_rows))
+
+    # Sort the images by label
+    label_predictions = global_values.generated_predictions[global_values.generated_labels == global_values.EXPECTED_LABEL]
+    cluster_predictions = [label_predictions[idx] for idx in cluster]
+
+    cluster = np.array(cluster)
+    cluster = cluster[np.argsort(cluster_predictions)]
+    from matplotlib.transforms import IdentityTransform
+    # Assign each axis to one index
+    try:
+        ax_list = ax.flatten()
+    except AttributeError:
+        ax_list = [ax]
+    for inc, t in enumerate(zip(ax_list, cluster)):
+        axx, idx = t
+        # Show the image
+        image = text_to_rgba(texts[idx], color="blue", fontsize=12, dpi=200)
+        axx.imshow( 
+            image
+            # cmap='gray_r',
+            # extent=(0, image.shape[0], image.shape[1], 0)
+        )
+        # axx.text(10, 10, texts[idx], fontsize=16, transform=ax.transAxes)
+        # axx.text(100, 100, texts[idx], color="blue", fontsize=10,
+        #  transform=IdentityTransform())
         # Show the overlay
         if overlays is not None:
             try:
@@ -209,3 +279,32 @@ def visualize_cluster_images(
         axx.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
 
     return fig, ax
+
+from io import BytesIO
+
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+
+
+
+def text_to_rgba(s, *, dpi, **kwargs):
+    # To convert a text string to an image, we can:
+    # - draw it on an empty and transparent figure;
+    # - save the figure to a temporary buffer using ``bbox_inches="tight",
+    #   pad_inches=0`` which will pick the correct area to save;
+    # - load the buffer using ``plt.imread``.
+    #
+    # (If desired, one can also directly save the image to the filesystem.)
+    line_size = int(len(s)/10)
+    e = ""
+    for i in range(0,8):
+        e = e + "\n" + str(s[i*line_size:(i+1)*line_size]) 
+    e = e + "\n" + str(s[9*line_size:])
+    fig = Figure(facecolor="none")
+    fig.text(0, 0, e, multialignment='center', **kwargs)
+    with BytesIO() as buf:
+        fig.savefig(buf, dpi=dpi, format="png", bbox_inches="tight",
+                    pad_inches=0)
+        buf.seek(0)
+        rgba = plt.imread(buf)
+    return rgba

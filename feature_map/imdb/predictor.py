@@ -6,17 +6,19 @@ import numpy as np
 
 from config.config_data import EXPECTED_LABEL
 from config.config_dirs import MODEL
-from config.config_featuremaps import VOCAB_SIZE
+from config.config_featuremaps import INPUT_MAXLEN
+from utils.global_values import MyTokenAndPositionEmbedding, TransformerBlock
 
 
 class Predictor:
 
     # Load the pre-trained model. ,custom_objects={'KerasLayer':hub.KerasLayer}
-    model = tf.keras.models.load_model(MODEL)
+    model = tf.keras.models.load_model(MODEL, custom_objects={'KerasLayer': MyTokenAndPositionEmbedding, 'TransformerBlock': TransformerBlock})
+
     print("Loaded model from disk")
 
     # loading
-    with open('models/tokenizer.pickle', 'rb') as handle:
+    with open('in/models/tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
 
     @staticmethod
@@ -24,7 +26,7 @@ class Predictor:
         # #Predictions vector
         seq = Predictor.tokenizer.texts_to_sequences([text])
 
-        padded_texts = pad_sequences(seq, maxlen=VOCAB_SIZE)
+        padded_texts = pad_sequences(seq, maxlen=INPUT_MAXLEN)
 
         explabel = (np.expand_dims(EXPECTED_LABEL, 0))
 

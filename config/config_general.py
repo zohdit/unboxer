@@ -34,10 +34,14 @@ def IMAGES_SIMILARITY_METRIC(lhs, rhs, threshold: float = None, max_activation: 
 def INDIVIDUAL_SIMILARITY_METRIC(lhs, rhs, max_manhattan):
     return manhattan_sim(lhs, rhs, max_manhattan)
 
+# HUMAN_EVALUATION_APPROACHES = [
+#     'Lime',
+#     'IntegratedGradients',
+#     'moves+orientation+bitmaps(5)_original'
+# ]
+
 HUMAN_EVALUATION_APPROACHES = [
     'Lime',
     'IntegratedGradients',
-    # 'GradCAMPP',
-    'moves+orientation+bitmaps(100)_clustered'
+    # 'poscount+negcount+verbcount(5)_original'
 ]
-

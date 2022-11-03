@@ -1,6 +1,8 @@
 import abc
+from cmath import exp
+import pickle
 from config.config_data import EXPECTED_LABEL
-from config.config_featuremaps import CASE_STUDY
+from config.config_featuremaps import CASE_STUDY, INPUT_MAXLEN
 
 import numpy as np
 import tensorflow as tf
@@ -77,19 +79,21 @@ class Approach(metaclass=abc.ABCMeta):
                 contributions = np.ma.masked_less(np.squeeze(contributions), 0).filled(0)
                 
         elif CASE_STUDY == "IMDB":
-            # explanation = self.__explainer.explain(global_values.test_data_padded[mask], baselines=None, target=global_values.predictions_cat[mask]
-            # , attribute_to_layer_inputs=False)
-            # attrs = explanation.attributions[0]
-            # contributions = attrs.sum(axis=2)
-            chunks_data = np.array_split(global_values.test_data_padded[mask], 100)
-            chunks_pred = np.array_split(global_values.predictions_cat[mask], 100)
-
-            for i in range(len(chunks_data)):
-                if i == 0:
-                    contributions = self.generate_contributions_by_data(chunks_data[i], chunks_pred[i])
-                else:
-                    contributions = np.concatenate((contributions, self.generate_contributions_by_data(chunks_data[i], chunks_pred[i])), axis=0)
-
+            try:
+                try:
+                    # The explainer expects original texts
+                    contributions = self.generate_contributions_by_data(global_values.generated_data[mask], global_values.generated_predictions[mask])                         
+                except:
+                    chunks_data = np.array_split(global_values.generated_data_padded[mask], 100)
+                    chunks_pred = np.array_split(global_values.generated_predictions[mask], 100)
+                    for i in range(len(chunks_data)):
+                        if i == 0:
+                            contributions = self.generate_contributions_by_data(chunks_data[i], chunks_pred[i])
+                        else:
+                            contributions = np.concatenate((contributions, self.generate_contributions_by_data(chunks_data[i], chunks_pred[i])), axis=0)
+            except ValueError:
+                # The explainer doesn't work with texts
+                return np.array([])
         return contributions
 
     def _generate_contributions_by_data(
@@ -99,30 +103,35 @@ class Approach(metaclass=abc.ABCMeta):
             only_positive: bool = True
     ) -> np.ndarray:
         # Generate the contributions
-        if CASE_STUDY == "MNIST":
+        try:
+            contributions = self.__explainer.explain(data, labels)
+        except:
+            # The explainer expects grayscale images
             try:
-                contributions = self.__explainer.explain(data, labels)
-            except ValueError:
-                # The explainer expects grayscale images
-                try:
+                if CASE_STUDY == "MNIST":
                     contributions = self.__explainer.explain(
                         tf.image.rgb_to_grayscale(data),
                         labels
                     )
-                except ValueError:
-                    # The explainer doesn't work with grayscale images
-                    return np.array([])
-            # Convert the contributions to grayscale
+                elif CASE_STUDY == "IMDB":
+                    with open('in/models/tokenizer.pickle', 'rb') as handle:
+                        tokenizer = pickle.load(handle)
+                    x_generated = tokenizer.texts_to_sequences(data)
+                    data = tf.keras.preprocessing.sequence.pad_sequences(x_generated, maxlen=INPUT_MAXLEN)
+
+                    contributions = self.__explainer.explain(
+                        data,
+                        labels
+                    )
+            except ValueError:
+                # The explainer doesn't work with grayscale images
+                return np.array([])
+        # Convert the contributions to grayscale
+        if CASE_STUDY == "MNIST":
             try:
                 contributions = np.squeeze(tf.image.rgb_to_grayscale(contributions).numpy())
             except tf.errors.InvalidArgumentError:
                 pass
-        elif CASE_STUDY == "IMDB":
-            # if self.__explainer == "IntegratedGradients":
-            explanation = self.__explainer.explain(data, baselines=None, target=labels
-            , attribute_to_layer_inputs=False)
-            attrs = explanation.attributions[0]
-            contributions = attrs.sum(axis=2)
         # Filter for the positive contributions
         if only_positive:
             contributions = np.ma.masked_less(np.squeeze(contributions), 0).filled(0)
@@ -143,6 +152,10 @@ class LocalLatentMode(Approach):
         # Generate the contributions for the filtered data
         mask_label = np.array(global_values.generated_labels == global_values.EXPECTED_LABEL)
         return super(LocalLatentMode, self)._generate_contributions(mask=mask_label)
+    
+    def generate_contributions_by_data(self, data, labels):
+        # Generate the contributions for the filtered data
+        return super(LocalLatentMode, self)._generate_contributions_by_data(data, labels)
 
     def cluster_contributions(self, contributions: np.ndarray) -> tuple:
         # Flatten the contributions and project them in the latent space
@@ -168,6 +181,10 @@ class GlobalLatentMode(Approach):
     def generate_contributions(self):
         # Generate the contributions for the whole data
         return super(GlobalLatentMode, self)._generate_contributions()
+
+    def generate_contributions_by_data(self, data, labels):
+        # Generate the contributions for the filtered data
+        return super(GlobalLatentMode, self)._generate_contributions_by_data(data, labels)
 
     def cluster_contributions(self, contributions: np.ndarray) -> tuple:
         # Flatten the contributions and project them into the latent space

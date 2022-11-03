@@ -42,3 +42,24 @@ class Predictor:
         confidence = confidence_expclass - confidence_notclass
 
         return prediction1, confidence
+
+    @staticmethod
+    def prediction_probability(img):
+        explabel = (np.expand_dims(EXPECTED_LABEL, 0))
+
+        # Convert class vectors to binary class matrices
+        explabel = keras.utils.to_categorical(explabel, 10)
+        explabel = np.argmax(explabel.squeeze())
+
+        # Predictions vector
+        try:
+            img_rgb = tf.image.grayscale_to_rgb(tf.convert_to_tensor(reshape(img)))
+            predictions = Predictor.model.predict(img_rgb)
+        except:
+            # The model expects grayscale images
+            predictions = Predictor.model.predict(tf.convert_to_tensor(reshape(img)))
+
+        # Activation level corresponding to the expected class
+        confidence_expclass = predictions[0][explabel]
+
+        return confidence_expclass

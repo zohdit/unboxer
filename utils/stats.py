@@ -80,8 +80,11 @@ def compute_comparison_matrix(
         # should be passed only as second argument (rhs)
         for idx in range(len(app_pairs)):
             # if the approach is high level
-            if "moves" in approaches[app_pairs[idx][0]]:
+            if "moves" in approaches[app_pairs[idx][0]] or "bitmaps" in approaches[app_pairs[idx][0]] or "orientation" in approaches[app_pairs[idx][0]] or "poscount" in approaches[app_pairs[idx][0]] or "negcount" in approaches[app_pairs[idx][0]] or "verbcount" in approaches[app_pairs[idx][0]]:
                 app_pairs[idx] = (app_pairs[idx][1], app_pairs[idx][0])
+
+            # if "moves" in approaches[app_pairs[idx][1]] or "bitmaps" in approaches[app_pairs[idx][1]] or "orientation" in approaches[app_pairs[idx][1]] or "poscount" in approaches[app_pairs[idx][1]] or "negcount" in approaches[app_pairs[idx][1]] or "verbcount" in approaches[app_pairs[idx][1]]:
+            #     app_pairs[idx] = (app_pairs[idx][1], app_pairs[idx][0])
     
         for idx1, idx2 in app_pairs:
             pairs.append((values[idx1], values[idx2]))
