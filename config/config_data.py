@@ -6,3 +6,4 @@ DATASET_LOADER = lambda: datasets.mnist.load_data()
 USE_RGB = True
 EXPECTED_LABEL = 1
 MISBEHAVIOR_ONLY = True
+NUM_INPUTS = 250

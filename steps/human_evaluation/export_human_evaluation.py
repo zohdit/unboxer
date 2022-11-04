@@ -1,16 +1,19 @@
 import warnings
 
-from steps.human_evaluation import separability
+from steps.human_evaluation import export_samples
+
 
 __EXECUTION_DICT = {
-    1: separability.export_clusters_sample_images
+    1: export_samples.export_clusters_sample_images()
+    2: 
 }
 
 __MENU = """
 exit: terminate the program
 0: Execute all
 
-1: Export the images for the separability human evaluation
+1: Export the MNIST human evaluation
+2: Export the IMDB human evaluation
 
 Select one or more of the options separated by a space: """
 

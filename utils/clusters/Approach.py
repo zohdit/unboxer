@@ -1,7 +1,7 @@
 import abc
 from cmath import exp
 import pickle
-from config.config_data import EXPECTED_LABEL
+from config.config_data import EXPECTED_LABEL, NUM_INPUTS
 from config.config_featuremaps import CASE_STUDY, INPUT_MAXLEN
 
 import numpy as np
@@ -57,13 +57,13 @@ class Approach(metaclass=abc.ABCMeta):
         # Generate the contributions
         if CASE_STUDY == "MNIST":
             try:          
-                contributions = self.__explainer.explain(global_values.generated_data[mask], global_values.generated_predictions_cat[mask])
+                contributions = self.__explainer.explain(global_values.generated_data[mask][:NUM_INPUTS], global_values.generated_predictions_cat[mask][:NUM_INPUTS])
             except ValueError:
                 # The explainer expects grayscale images
                 try:
                     contributions = self.__explainer.explain(
-                        global_values.generated_data_gs[mask],
-                        global_values.generated_predictions_cat[mask]
+                        global_values.generated_data_gs[mask][:NUM_INPUTS],
+                        global_values.generated_predictions_cat[mask][:NUM_INPUTS]
                     )
                 except ValueError:
                     # The explainer doesn't work with grayscale images
@@ -82,10 +82,12 @@ class Approach(metaclass=abc.ABCMeta):
             try:
                 try:
                     # The explainer expects original texts
-                    contributions = self.generate_contributions_by_data(global_values.generated_data[mask], global_values.generated_predictions[mask])                         
+                    contributions = self.generate_contributions_by_data(global_values.generated_data[mask][:NUM_INPUTS], global_values.generated_predictions[mask][:NUM_INPUTS])                         
                 except:
-                    chunks_data = np.array_split(global_values.generated_data_padded[mask], 100)
-                    chunks_pred = np.array_split(global_values.generated_predictions[mask], 100)
+                    # contributions = self.generate_contributions_by_data(global_values.generated_data_padded[mask][:NUM_INPUTS], global_values.generated_predictions[mask][:NUM_INPUTS])                         
+                
+                    chunks_data = np.array_split(global_values.generated_data_padded[mask][:NUM_INPUTS], 100)
+                    chunks_pred = np.array_split(global_values.generated_predictions[mask][:NUM_INPUTS], 100)
                     for i in range(len(chunks_data)):
                         if i == 0:
                             contributions = self.generate_contributions_by_data(chunks_data[i], chunks_pred[i])

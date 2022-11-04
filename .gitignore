@@ -15,3 +15,5 @@ playground/
 *.ipynb
 
 in/
+
+.vscode/

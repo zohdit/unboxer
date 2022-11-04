@@ -13,7 +13,7 @@ class IntegratedGradients:
     def explain(self, data, labels):
         explanation = self.explainer.explain(data, baselines=None, target=labels
             , attribute_to_layer_inputs=False)
-        attrs = explanation.attributions[0]
+        attrs = explanation.attributions[0]        
         contributions = attrs.sum(axis=2)
         contributions_processed = process_text_contributions(data, contributions)
         return contributions_processed
@@ -22,18 +22,21 @@ class IntegratedGradients:
     def export_explanation(self, data, labels, file_name):
 
         seq = Predictor.tokenizer.texts_to_sequences(data)
-        data = tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=INPUT_MAXLEN)
+        data_padded = tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=INPUT_MAXLEN)
 
-        explanation = self.explainer.explain(data, baselines=None, target=labels
+        explanation = self.explainer.explain(data_padded, baselines=None, target=labels
             , attribute_to_layer_inputs=False)
         attrs = explanation.attributions[0]
+
         contributions = attrs.sum(axis=2)
         expl = contributions[0]
 
+        
         text = Predictor.tokenizer.sequences_to_texts(seq)
-        text = text[0].split()
 
+        text = text[0].split()        
         first_index = VOCAB_SIZE - len(text)
+
         colors = colorize(expl[first_index:])
 
         _data = HTML("".join(list(map(hlstr, text, colors))))

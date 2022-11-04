@@ -40,7 +40,7 @@ class Lime():
 
         explanations = []        
         for idx in range(len(data)):
-            explanation = self.explainer.explain_instance(data[idx], self.dnn_pipeline.predict_proba, num_features=2000)
+            explanation = self.explainer.explain_instance(data[idx], self.dnn_pipeline.predict_proba, num_features=1000)
             contribution = []
             seq = Predictor.tokenizer.texts_to_sequences([data[idx]])
             text = Predictor.tokenizer.sequences_to_texts(seq)
@@ -82,10 +82,7 @@ class Lime():
 
     def export_explanation(self, data, labels, file_name):     
         for idx in range(len(data)):
-            explanation = self.explainer.explain_instance(data[idx], self.dnn_pipeline.predict_proba, num_features=2000)
-            
-            seq = Predictor.tokenizer.texts_to_sequences([data[idx]])
-
+            explanation = self.explainer.explain_instance(data[idx], self.dnn_pipeline.predict_proba, num_features=20)
 
             with open(f'{file_name}.html', "w") as file:
                 explanation.save_to_file(f'{file_name}.html')
