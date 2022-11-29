@@ -1,8 +1,8 @@
 import abc
 from cmath import exp
 import pickle
-from config.config_data import EXPECTED_LABEL, NUM_INPUTS
-from config.config_featuremaps import CASE_STUDY, INPUT_MAXLEN
+from config.config_data import EXPECTED_LABEL, INPUT_MAXLEN, NUM_INPUTS
+from config.config_featuremaps import CASE_STUDY
 
 import numpy as np
 import tensorflow as tf
@@ -12,7 +12,7 @@ from clusim.clustering import Clustering
 
 from config.config_general import IMAGES_SIMILARITY_METRIC
 from config.config_heatmaps import CLUSTERING_TECHNIQUE
-from utils import global_values
+from utils import generate_inputs
 from utils.stats import compute_comparison_matrix
 
 
@@ -24,9 +24,9 @@ class Approach(metaclass=abc.ABCMeta):
         self.__clustering_technique = CLUSTERING_TECHNIQUE
 
     @abc.abstractmethod
-    def generate_contributions(self) -> np.ndarray:
+    def load_contributions(self) -> np.ndarray:
         """
-        Generate the contributions for the predictions
+        load the contributions for the predictions
         :return: The contributions for the predictions
         """
         raise NotImplementedError()
@@ -49,55 +49,6 @@ class Approach(metaclass=abc.ABCMeta):
     def get_explainer(self):
         return self.__explainer
 
-    def _generate_contributions(
-            self,
-            mask: np.ndarray = np.ones(len(global_values.generated_data), dtype=bool),
-            only_positive: bool = True
-    ) -> np.ndarray:
-        # Generate the contributions
-        if CASE_STUDY == "MNIST":
-            try:          
-                contributions = self.__explainer.explain(global_values.generated_data[mask][:NUM_INPUTS], global_values.generated_predictions_cat[mask][:NUM_INPUTS])
-            except ValueError:
-                # The explainer expects grayscale images
-                try:
-                    contributions = self.__explainer.explain(
-                        global_values.generated_data_gs[mask][:NUM_INPUTS],
-                        global_values.generated_predictions_cat[mask][:NUM_INPUTS]
-                    )
-                except ValueError:
-                    # The explainer doesn't work with grayscale images
-                    return np.array([])
-            # Convert the contributions to grayscale
-            try:
-                contributions = np.squeeze(tf.image.rgb_to_grayscale(contributions).numpy())
-            except tf.errors.InvalidArgumentError:
-                pass
-            
-            # Filter for the positive contributions
-            if only_positive:
-                contributions = np.ma.masked_less(np.squeeze(contributions), 0).filled(0)
-                
-        elif CASE_STUDY == "IMDB":
-            try:
-                try:
-                    # The explainer expects original texts
-                    contributions = self.generate_contributions_by_data(global_values.generated_data[mask][:NUM_INPUTS], global_values.generated_predictions[mask][:NUM_INPUTS])                         
-                except:
-                    # contributions = self.generate_contributions_by_data(global_values.generated_data_padded[mask][:NUM_INPUTS], global_values.generated_predictions[mask][:NUM_INPUTS])                         
-                
-                    chunks_data = np.array_split(global_values.generated_data_padded[mask][:NUM_INPUTS], 100)
-                    chunks_pred = np.array_split(global_values.generated_predictions[mask][:NUM_INPUTS], 100)
-                    for i in range(len(chunks_data)):
-                        if i == 0:
-                            contributions = self.generate_contributions_by_data(chunks_data[i], chunks_pred[i])
-                        else:
-                            contributions = np.concatenate((contributions, self.generate_contributions_by_data(chunks_data[i], chunks_pred[i])), axis=0)
-            except ValueError:
-                # The explainer doesn't work with texts
-                return np.array([])
-        return contributions
-
     def _generate_contributions_by_data(
             self,
             data,
@@ -116,15 +67,14 @@ class Approach(metaclass=abc.ABCMeta):
                         labels
                     )
                 elif CASE_STUDY == "IMDB":
-                    with open('in/models/tokenizer.pickle', 'rb') as handle:
-                        tokenizer = pickle.load(handle)
-                    x_generated = tokenizer.texts_to_sequences(data)
-                    data = tf.keras.preprocessing.sequence.pad_sequences(x_generated, maxlen=INPUT_MAXLEN)
-
-                    contributions = self.__explainer.explain(
-                        data,
-                        labels
-                    )
+                        with open('in/models/tokenizer.pickle', 'rb') as handle:
+                            tokenizer = pickle.load(handle)
+                        x_generated = tokenizer.texts_to_sequences(data)
+                        data = tf.keras.preprocessing.sequence.pad_sequences(x_generated, maxlen=INPUT_MAXLEN)
+                        contributions = self.__explainer.explain(
+                            data,
+                            labels
+                        )
             except ValueError:
                 # The explainer doesn't work with grayscale images
                 return np.array([])
@@ -134,32 +84,37 @@ class Approach(metaclass=abc.ABCMeta):
                 contributions = np.squeeze(tf.image.rgb_to_grayscale(contributions).numpy())
             except tf.errors.InvalidArgumentError:
                 pass
-        # Filter for the positive contributions
-        if only_positive:
-            contributions = np.ma.masked_less(np.squeeze(contributions), 0).filled(0)
+            # Filter for the positive contributions
+            if only_positive:
+                contributions = np.ma.masked_less(np.squeeze(contributions), 0).filled(0)
+
         return contributions
 
+    def _load_contributions(self, explainer, iter):
+        if CASE_STUDY == "MNIST":
+            contributions = np.load(f"logs/mnist/contributions/test_data_{EXPECTED_LABEL}_{explainer.__class__.__name__}_{iter}.npy")
+        elif CASE_STUDY == "IMDB":
+            contributions = np.load(f"logs/imdb/contributions/test_data_{EXPECTED_LABEL}_{explainer.__class__.__name__}_{iter}.npy")
+        return contributions
 
     def __str__(self):
         params = [(technique.get_params().get('perplexity'), technique.get_params().get('n_components')) for technique in self.__dimensionality_reduction_techniques]
         return f'{self.__explainer.__class__.__name__} - perplexity, dimensions = {params}'
 
-
 class LocalLatentMode(Approach):
 
     def __init__(self, explainer, dimensionality_reduction_techniques):
         super(LocalLatentMode, self).__init__(explainer, dimensionality_reduction_techniques)
-
-    def generate_contributions(self):
-        # Generate the contributions for the filtered data
-        mask_label = np.array(global_values.generated_labels == global_values.EXPECTED_LABEL)
-        return super(LocalLatentMode, self)._generate_contributions(mask=mask_label)
     
     def generate_contributions_by_data(self, data, labels):
         # Generate the contributions for the filtered data
         return super(LocalLatentMode, self)._generate_contributions_by_data(data, labels)
 
     def cluster_contributions(self, contributions: np.ndarray) -> tuple:
+        _, _, test_data, test_labels, test_predictions = generate_inputs.load_inputs()
+        mask_label = np.array(test_labels == EXPECTED_LABEL)
+        contributions = contributions[mask_label]
+        contributions = contributions[:NUM_INPUTS]
         # Flatten the contributions and project them in the latent space
         contributions_flattened = contributions.reshape(contributions.shape[0], -1)
         projections = np.array([])
@@ -174,15 +129,13 @@ class LocalLatentMode(Approach):
             score = np.nan
         return clusters, projections, score
 
+    def load_contributions(self, explainer, iter):
+        return super(LocalLatentMode, self)._load_contributions(explainer, iter)
 
 class GlobalLatentMode(Approach):
 
     def __init__(self, explainer, dimensionality_reduction_techniques):
         super(GlobalLatentMode, self).__init__(explainer, dimensionality_reduction_techniques)
-
-    def generate_contributions(self):
-        # Generate the contributions for the whole data
-        return super(GlobalLatentMode, self)._generate_contributions()
 
     def generate_contributions_by_data(self, data, labels):
         # Generate the contributions for the filtered data
@@ -195,8 +148,10 @@ class GlobalLatentMode(Approach):
         for dim_red_tech in self.get_dimensionality_reduction_techniques():
             projections = dim_red_tech.fit_transform(contributions_flattened)
         # Cluster the filtered projections
-        mask_label = np.array(global_values.generated_labels == global_values.EXPECTED_LABEL)
+        _, _, test_data, test_labels, test_predictions = generate_inputs.load_inputs()
+        mask_label = np.array(test_labels == EXPECTED_LABEL)
         projections_filtered = projections[mask_label]
+        projections_filtered = projections_filtered[:NUM_INPUTS]
         clusters = CLUSTERING_TECHNIQUE().fit_predict(projections_filtered)
         # Compute the silhouette score for the clusters
         try:
@@ -205,16 +160,13 @@ class GlobalLatentMode(Approach):
             score = np.nan
         return clusters, projections_filtered, score
 
+    def load_contributions(self, explainer, iter):
+        return super(GlobalLatentMode, self)._load_contributions(explainer, iter)
 
 class OriginalMode(Approach):
 
     def __init__(self, explainer, dimensionality_reduction_techniques):
         super(OriginalMode, self).__init__(explainer, dimensionality_reduction_techniques)
-
-    def generate_contributions(self):
-        # Generate the contributions for the filtered data
-        mask_label = np.array(global_values.generated_labels == global_values.EXPECTED_LABEL)
-        return super(OriginalMode, self)._generate_contributions(mask=mask_label)
 
     def generate_contributions_by_data(self, data, labels):
         # Generate the contributions for the filtered data
@@ -225,6 +177,10 @@ class OriginalMode(Approach):
         return IMAGES_SIMILARITY_METRIC(pair[0], pair[1])
 
     def cluster_contributions(self, contributions: np.ndarray) -> tuple:
+        _, _, test_data, test_labels, test_predictions = generate_inputs.load_inputs()
+        mask_label = np.array(test_labels == EXPECTED_LABEL)
+        contributions = contributions[mask_label]
+        contributions = contributions[:NUM_INPUTS]
         # Compute the similarity matrix for the contributions
         similarity_matrix = compute_comparison_matrix(
             list(contributions),
@@ -250,6 +206,9 @@ class OriginalMode(Approach):
 
         # Flatten the contributions and project them into the latent space
         contributions_flattened = contributions.reshape(contributions.shape[0], -1)
-        projections = TSNE(perplexity=40).fit_transform(contributions_flattened)
+        projections = TSNE(perplexity=1).fit_transform(contributions_flattened)
 
         return clusters, projections, score
+
+    def load_contributions(self, explainer, iter):
+        return super(OriginalMode, self)._load_contributions(explainer, iter)

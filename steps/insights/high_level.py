@@ -1,14 +1,17 @@
+from config.config_data import EXPECTED_LABEL
 import numpy as np
 import pandas as pd
 from clusim.clustering import Clustering
 from sklearn.manifold import TSNE
 from tqdm import tqdm
+import tensorflow as tf
+
 
 from config.config_dirs import FEATUREMAPS_DATA
 from config.config_featuremaps import FEATUREMAPS_CLUSTERING_MODE
 from config.config_general import CLUSTERS_SIMILARITY_METRIC, CLUSTERS_SORT_METRIC
 from config.config_outputs import MAX_LABELS
-from utils import global_values
+from utils import generate_inputs
 from utils.clusters.postprocessing import get_sorted_clusters
 from utils.general import save_figure
 from utils.plotter.distance_matrix import show_comparison_matrix
@@ -54,12 +57,15 @@ def featuremaps_clusters_projections():
         lambda row: f'{row["approach"]}({row["map_size"]})_{row["mode"]}',
         axis=1
     )
-    mask_label = np.array(global_values.test_labels == global_values.EXPECTED_LABEL)
+    _, _, test_data, test_labels, test_predictions = generate_inputs.load_inputs()
+    test_data_gs =  tf.image.rgb_to_grayscale(test_data)
+
+    mask_label = np.array(test_labels == EXPECTED_LABEL)
 
     # Project the data in the 2d latent space
     projections = TSNE(perplexity=40).fit_transform(
-        global_values.test_data_gs[mask_label].reshape(
-            global_values.test_data_gs[mask_label].shape[0],
+        test_data_gs[mask_label].reshape(
+           test_data_gs[mask_label].shape[0],
             -1
         )
     )
@@ -80,8 +86,10 @@ def featuremaps_clusters_images():
         lambda row: f'{row["approach"]}({row["map_size"]})_{row["mode"]}',
         axis=1
     )
-    mask_label = np.array(global_values.test_labels == global_values.EXPECTED_LABEL)
-    mask_miss = np.array(global_values.test_labels != global_values.predictions)
+    _, _, test_data, test_labels, predictions = generate_inputs.load_inputs()
+    test_data_gs =  tf.image.rgb_to_grayscale(test_data)
+    mask_miss = np.array(test_labels != predictions)
+    mask_label = np.array(test_labels == EXPECTED_LABEL)
 
     # Show the clusters projections for each feature combination
     tuples = df[['complete_approach', 'clusters']].values
@@ -105,8 +113,8 @@ def featuremaps_clusters_images():
         correct_sample_mask = mask_contains_miss_label & ~mask_miss[mask_label] & mask_contains_sample_label
         fig, _ = visualize_clusters_images(
             cluster_membership=clusters_membership[correct_sample_mask],
-            images=global_values.test_data_gs[mask_label][correct_sample_mask],
-            predictions=global_values.predictions[mask_label][correct_sample_mask]
+            images=test_data_gs[mask_label][correct_sample_mask],
+            predictions=predictions[mask_label][correct_sample_mask]
         )
         fig.suptitle(f'Correctly classified items for {approach}')
         save_figure(fig, f'{BASE_DIR}/correct_samples_{approach}')
@@ -114,8 +122,8 @@ def featuremaps_clusters_images():
         misses_sample_mask = mask_contains_miss_label & mask_miss[mask_label] & mask_contains_sample_label
         fig, _ = visualize_clusters_images(
             cluster_membership=clusters_membership[misses_sample_mask],
-            images=global_values.test_data_gs[mask_label][misses_sample_mask],
-            predictions=global_values.predictions[mask_label][misses_sample_mask]
+            images=test_data_gs[mask_label][misses_sample_mask],
+            predictions=predictions[mask_label][misses_sample_mask]
         )
         fig.suptitle(f'Misclassified classified items for {approach}')
         save_figure(fig, f'{BASE_DIR}/misclassified_samples_{approach}')

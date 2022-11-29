@@ -36,7 +36,7 @@ def show_comparison_matrix(
 
     # Get the matrix
     matrix = compute_comparison_matrix(
-        values=values,
+         values=values,
         approaches=approaches,
         metric=metric,
         args=None,

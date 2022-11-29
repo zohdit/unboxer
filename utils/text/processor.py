@@ -1,12 +1,10 @@
 
 
 import random
-from config.config_data import EXPECTED_LABEL
+from config.config_data import VOCAB_SIZE
 from feature_map.imdb.predictor import Predictor
 import numpy as np
 
-from config.config_featuremaps import INPUT_MAXLEN
-from utils import global_values
 
 
 def process_text_contributions(data, contributions):
@@ -17,10 +15,18 @@ def process_text_contributions(data, contributions):
     :param contributions: text contributions
     :return: The processed contributions
     """
-    processed_contribution = np.zeros(shape=(len(data), INPUT_MAXLEN), dtype=float)
+
+    processed_contribution = np.zeros(shape=(len(data), VOCAB_SIZE), dtype=float)
     for idx1 in range(len(data)):
+        
         for idx2 in range(len(data[idx1])):
+
             word_index = data[idx1][idx2]
+            if len(contributions[idx1]) <= idx2:
+                print(f"idx1: {idx1}")
+                print(f"idx2: {idx2}")
+                print(f"word_index: {word_index}")
+                print(Predictor.tokenizer.sequences_to_texts([data[idx1]]))
             processed_contribution[idx1][word_index] = contributions[idx1][idx2] 
     return processed_contribution    
 
@@ -52,7 +58,6 @@ def words_from_contribution(text, contribution):
 
     return list_words  
 
-
 def top_ten(text, contribution):
     """
     extract important word from the contribution
@@ -71,7 +76,7 @@ def top_ten(text, contribution):
     # iterate on processed contribution which is a vector with INPUT_MAXLEN size
     for idx1 in range(len(contribution)):
         # check if the word has positive contribution
-        if contribution[idx1] > 0:
+        if abs(contribution[idx1]) > 0:
             # find the corresponding word and add it to the list of important words if its not already added
             word = [text[i] for i, item in enumerate(sequence) if item == idx1 and item != []]
             if word != []:

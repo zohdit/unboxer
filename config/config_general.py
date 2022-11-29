@@ -21,27 +21,12 @@ CLUSTERS_SIMILARITY_METRIC: Callable[[Clustering, Clustering], float] =  custom_
 
 
 def IMAGES_SIMILARITY_METRIC(lhs, rhs, threshold: float = None, max_activation: float = None, num_bins: int = 2):
-    # lhs_processed = lhs
-    # rhs_processed = rhs
-    # if threshold is not None:
-    #     lhs_processed, _ = mask_noise(lhs_processed, normalize=True, threshold=threshold)
-    #     rhs_processed, _ = mask_noise(rhs_processed, normalize=True, threshold=threshold)
-    # if max_activation is not None:
-    #     lhs_processed = np.digitize(lhs_processed, np.linspace(0, max_activation, num_bins))
-    #     rhs_processed = np.digitize(rhs_processed, np.linspace(0, max_activation, num_bins))
     return euclidean_similarity(lhs, rhs)
 
 def INDIVIDUAL_SIMILARITY_METRIC(lhs, rhs, max_manhattan):
     return manhattan_sim(lhs, rhs, max_manhattan)
 
-# HUMAN_EVALUATION_APPROACHES = [
-#     'Lime',
-#     'IntegratedGradients',
-#     'moves+orientation+bitmaps(5)_original'
-# ]
-
 HUMAN_EVALUATION_APPROACHES = [
     'Lime',
-    'IntegratedGradients',
-    # 'poscount+negcount+verbcount(5)_original'
+    'IntegratedGradients'
 ]

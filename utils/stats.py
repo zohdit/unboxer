@@ -63,7 +63,35 @@ def weight_value(value: float, weight: float, max_weight: float) -> float:
     return value * math.log((math.e - 1) * weight / max_weight + 1)
 
 
-def compute_comparison_matrix(
+def compute_comparison_matrix(        
+        values: list,
+        approaches: list,
+        metric: callable,
+        args,
+        show_progress_bar: bool = False,
+        multi_process: bool = False):
+
+    matrix_ll_hl = compute_comparison_matrix_ll_hl(
+        values=values,
+        approaches=approaches,
+        metric=metric,
+        args=None,
+        show_progress_bar=show_progress_bar,
+        multi_process=multi_process
+    )
+    matrix_hl_ll = compute_comparison_matrix_hl_ll(
+        values=values,
+        approaches=approaches,
+        metric=metric,
+        args=None,
+        show_progress_bar=show_progress_bar,
+        multi_process=multi_process
+    )
+    matrix = np.min( np.array([matrix_ll_hl, matrix_hl_ll]), axis=0 )
+    return matrix
+
+
+def compute_comparison_matrix_ll_hl(
         values: list,
         approaches: list,
         metric: callable,
@@ -82,9 +110,6 @@ def compute_comparison_matrix(
             # if the approach is high level
             if "moves" in approaches[app_pairs[idx][0]] or "bitmaps" in approaches[app_pairs[idx][0]] or "orientation" in approaches[app_pairs[idx][0]] or "poscount" in approaches[app_pairs[idx][0]] or "negcount" in approaches[app_pairs[idx][0]] or "verbcount" in approaches[app_pairs[idx][0]]:
                 app_pairs[idx] = (app_pairs[idx][1], app_pairs[idx][0])
-
-            # if "moves" in approaches[app_pairs[idx][1]] or "bitmaps" in approaches[app_pairs[idx][1]] or "orientation" in approaches[app_pairs[idx][1]] or "poscount" in approaches[app_pairs[idx][1]] or "negcount" in approaches[app_pairs[idx][1]] or "verbcount" in approaches[app_pairs[idx][1]]:
-            #     app_pairs[idx] = (app_pairs[idx][1], app_pairs[idx][0])
     
         for idx1, idx2 in app_pairs:
             pairs.append((values[idx1], values[idx2]))
@@ -93,6 +118,54 @@ def compute_comparison_matrix(
 
     
 
+    # Show the progress bar
+    if show_progress_bar:
+        pairs = tqdm(pairs, desc='Computing the comparison matrix', total=len(pairs), leave=False)
+    # Create the pool of processes and use it to compute the distances
+    if multi_process:
+        pool = multiprocessing.Pool(int(os.cpu_count() / 2))
+        distances = pool.map(metric, pairs)
+    else:
+        if args == None:
+            distances = [metric(lhs, rhs) for lhs, rhs in pairs]
+        else:
+            distances = [metric(lhs, rhs, args) for lhs, rhs in pairs]
+        
+    # Initialize the distance matrix to 0
+    matrix = np.zeros(shape=(len(values), len(values)))
+    # Set the values of the upper triangular matrix to the distances
+    matrix[np.triu_indices_from(matrix, 1)] = distances
+    # Complete the matrix by transposing it
+    matrix = matrix + np.transpose(matrix)
+    return matrix
+
+    
+def compute_comparison_matrix_hl_ll(
+        values: list,
+        approaches: list,
+        metric: callable,
+        args,
+        show_progress_bar: bool = False,
+        multi_process: bool = False
+):
+    # Compute all the combinations of values
+
+    if len(approaches) > 0: 
+        pairs = []
+        app_pairs = list(combinations(range(len(approaches)), 2))
+        # if we use custom similarity the high level explanation
+        # should be passed only as second argument (rhs)
+        for idx in range(len(app_pairs)):
+            # if the approach is high level
+            if "moves" in approaches[app_pairs[idx][1]] or "bitmaps" in approaches[app_pairs[idx][1]] or "orientation" in approaches[app_pairs[idx][1]] or "poscount" in approaches[app_pairs[idx][1]] or "negcount" in approaches[app_pairs[idx][1]] or "verbcount" in approaches[app_pairs[idx][1]]:
+                app_pairs[idx] = (app_pairs[idx][1], app_pairs[idx][0])
+    
+        for idx1, idx2 in app_pairs:
+            pairs.append((values[idx1], values[idx2]))
+    else:
+        pairs = list(combinations(values, 2))
+
+    
     # Show the progress bar
     if show_progress_bar:
         pairs = tqdm(pairs, desc='Computing the comparison matrix', total=len(pairs), leave=False)

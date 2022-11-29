@@ -7,20 +7,19 @@ The tool can be configured using the files:
     <dd>
 This file defines the location of the inputs and the outputs of the tool.
 </dd>
-    <code>config/config_const.py</code>
+    <code>config/config_data.py</code>
     <dd>
 Ths file defines configurations for some constants used by the tool.
 
 <code>EXPECTED_LABEL</code>: The label to use to filter the data for the experiment.
 
-<code>MAX_LABELS</code>, <code>MAX_SAMPLES</code>: Respectively the maximum number of rows and columns to use when
-exporting the sample images for the clusters.
+<code>NUM_INPUTS</code>: Number of inputs from data set to be consider for comparison.
 
-<code>IMG_SIZE</code>: The size of the images in the dataset.
+<code>INPUT_MAXLEN</code>: The size of the texts with paddings in the dataset.
 
-<code>NUM_CLASSES</code>: The number of classes for the data labels.
+<code>VOCAB_SIZE</code>: The size of dictionary used for text tokenization.
 
-<code>GRID_SIZE</code>: The size of the grid used for the sufficiency evaluation.
+<code>USE_RGB</code>: If use RGB images or grey scaled.
 
 </dd>
     <code>config/config_general.py</code>
@@ -36,8 +35,8 @@ no sorting is provided, the tool draw a random sample.
     <dd>
 This fle defines the configuration for the heatmaps.
 
-<code>HEATMAPS_PROCESS_MODE</code>: The processing mode to use when generating the
-heatmaps [`LocalLatentMode`, `GlobalLatentMode`].
+<code>APPROACH</code>: The processing mode to use when generating the
+heatmaps [`Original`, `LocalLatentMode`, `GlobalLatentMode`].
 
 <code>EXPLAINERS</code>: The list of explainers to use when generating the contributions.
 
@@ -53,12 +52,30 @@ best configuration according to the silhouette score of the corresponding cluste
 <dd>
 This fle defines the configuration for the featuremaps.
 
+<code>CASE_STUDY</code>: MNIST or IMDB.
+
 <code>NUM_CELLS</code>: The size of the featuremaps.
 
-<code>BITMAP_THRESHOLD</code>: <strong>COMPLETE</strong>
+<code>BITMAP_THRESHOLD</code>: The threshold for luminosity metric computation.
 
-<code>ORIENTATION_THRESHOLD</code>: <strong>COMPLETE</strong>
+<code>ORIENTATION_THRESHOLD</code>: The threshold for orientation metric computation.
 
-<code>FEATUREMAPS_CLUSTERS_MODE</code>: The clustering technique to use on the featuremaps [`ORIGINAL`, `REDUCED`].
+<code>FEATUREMAPS_CLUSTERS_MODE</code>: The clustering technique to use on the featuremaps [`ORIGINAL`, `REDUCED`,  `CLUSTERED`].
+
+
+<code>MAP_DIMENSIONS</code>: The list of dimensions to be considered for generating feature maps.
+
+</dd>
+    <code>config/config_outputs.py</code>
+    <dd>
+Ths file defines configurations for visualisations.
+
+<code>IMG_SIZE</code>: The size of image of an input.
+
+<code>NUM_SAMPLES</code>: The number of samples for human study.
+
+<code>ORIENTATION_THRESHOLD</code>: the threshold for orientation metric computation.
+
+
 </dd>
 </dl>

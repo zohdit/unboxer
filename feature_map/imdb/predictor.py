@@ -4,16 +4,15 @@ import pickle
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import numpy as np
 
-from config.config_data import EXPECTED_LABEL
+from config.config_data import EXPECTED_LABEL, INPUT_MAXLEN
 from config.config_dirs import MODEL
-from config.config_featuremaps import INPUT_MAXLEN
-from utils.global_values import MyTokenAndPositionEmbedding, TransformerBlock
+
+
 
 
 class Predictor:
 
-    # Load the pre-trained model. ,custom_objects={'KerasLayer':hub.KerasLayer}
-    model = tf.keras.models.load_model(MODEL, custom_objects={'KerasLayer': MyTokenAndPositionEmbedding, 'TransformerBlock': TransformerBlock})
+    model = tf.keras.models.load_model(MODEL)
 
     print("Loaded model from disk")
 

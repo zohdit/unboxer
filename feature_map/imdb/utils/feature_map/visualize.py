@@ -31,19 +31,26 @@ def visualize_map(name, features, samples):
     if len(features) == 3:
         # Visualize the map
         fig, ax = visualize_3d_map(coverage_data, misbehavior_data)
+        ax.set_zlabel(features[2].feature_name)
+             # Set the style
+        fig.suptitle(f'Feature map: digit {EXPECTED_LABEL}', fontsize=16)
+        ax.set_xlabel(features[0].feature_name)
+        ax.set_ylabel(features[1].feature_name)
+            
+        # Export the figure
+        save_figure(fig, f'out/featuremaps/{name}_{EXPECTED_LABEL}_{map_size_str}_{features_comb_str}')
     # Handle the case of 2d maps
-    else:
+    elif len(features) == 2:
         # Visualize the map
         fig, ax = visualize_2d_map(coverage_data, misbehavior_data)
 
-    # Set the style
-    fig.suptitle(f'Feature map: digit {EXPECTED_LABEL}', fontsize=16)
-    ax.set_xlabel(features[0].feature_name)
-    ax.set_ylabel(features[1].feature_name)
-    if len(features) == 3:
-        ax.set_zlabel(features[2].feature_name)
-    # Export the figure
-    save_figure(fig, f'out/featuremaps/{name}_{EXPECTED_LABEL}_{map_size_str}_{features_comb_str}')
+        # Set the style
+        fig.suptitle(f'Feature map: digit {EXPECTED_LABEL}', fontsize=16)
+        ax.set_xlabel(features[0].feature_name)
+        ax.set_ylabel(features[1].feature_name)
+            
+        # Export the figure
+        save_figure(fig, f'out/featuremaps/{name}_{EXPECTED_LABEL}_{map_size_str}_{features_comb_str}')
 
     # Record the data
     data.append({
@@ -95,16 +102,6 @@ def visualize_2d_map(coverage_data, misbehavior_data):
     ax.legend(frameon=False, bbox_to_anchor=(.3, 1.1))
     return fig, ax
 
-
-# def unpack_plot_data(data: np.ndarray):
-#     # Get the indexes where the values are not zero
-#     indexes = [np.array(idx) for idx in data.nonzero()]
-#     # Get the values corresponding to each triple of indexes
-#     values = np.array([data[idx] for idx in zip(*indexes)])
-#     x = np.array([idx[0] for idx in zip(*indexes)])
-#     y = np.array([idx[1] for idx in zip(*indexes)])
-#     z = np.array([idx[2] for idx in zip(*indexes)])
-#     return x, y, z, values
 
 def unpack_plot_data(data: np.ndarray):
     # Get the indexes where the values are not zero

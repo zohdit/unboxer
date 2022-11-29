@@ -1,8 +1,9 @@
+from config.config_data import EXPECTED_LABEL
 import numpy as np
 import pandas as pd
 
 from config.config_dirs import FEATUREMAPS_DATA, HEATMAPS_DATA, HEATMAPS_DATA_RAW
-from utils import global_values
+from utils import generate_inputs
 from utils.dataframes.extractor import get_average_popularity_score
 from IPython.display import display
 
@@ -50,8 +51,11 @@ def preprocess_data():
     # Read all the needed data
     featuremaps_data = preprocess_featuremaps_data()
     heatmaps_data = preprocess_heatmaps_data()
-    mask_label = np.array(global_values.generated_labels == global_values.EXPECTED_LABEL)
-    mask_miss = np.array(global_values.generated_labels != global_values.generated_predictions)
+
+    _, _, generated_data, generated_labels, generated_predictions = generate_inputs.load_inputs()
+
+    mask_label = np.array(generated_labels == EXPECTED_LABEL)
+    mask_miss = np.array(generated_labels != generated_predictions)
     misclassified_idxs = np.argwhere(mask_miss[mask_label])
 
     # Merge the data for the featuremaps and the heatmaps

@@ -31,13 +31,13 @@ def compare_approaches(
         # Extract some information about the current approach
         explainer = approach.get_explainer()
         dimensionality_reduction_techniques = approach.get_dimensionality_reduction_techniques()
-        for _ in trange(iterations, desc='Iterating', leave=False):
+        for iter in trange(iterations, desc='Iterating', leave=False):
             # Generate the contributions
             contributions_start = time.time()
-            contributions = approach.generate_contributions()  
+            contributions = approach.load_contributions(explainer, iter)  
             contributions_time = time.time() - contributions_start
             if len(contributions) == 0:
-                print("***** Impossible to generate the contributions ")
+                print("***** Impossible to load the contributions ")
                 # Impossible to generate the contributions -> skip
                 continue
             # Cluster the contributions

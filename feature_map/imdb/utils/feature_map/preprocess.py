@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from config.config_data import EXPECTED_LABEL
+from config.config_data import EXPECTED_LABEL, NUM_INPUTS
 from config.config_dirs import FEATUREMAPS_META
 from feature_map.imdb.feature_simulator import FeatureSimulator
 from feature_map.imdb.sample import Sample
 from feature_map.imdb.utils.general import missing
-from utils import global_values
+from utils import generate_inputs
 
 
 def extract_samples_and_stats():
@@ -20,12 +20,14 @@ def extract_samples_and_stats():
 
     data_samples = []
 
+    _, _, generated_data, generated_labels, generated_predictions = generate_inputs.load_inputs()
+
     filtered = list(filter(lambda t: t[1] == EXPECTED_LABEL, zip(
-        global_values.generated_data,
-        global_values.generated_labels,
-        global_values.generated_predictions
+        generated_data,
+        generated_labels,
+        generated_predictions
     )))
-    for text, label, prediction in tqdm(filtered, desc='Extracting the samples and the statistics'):
+    for text, label, prediction in tqdm(filtered[:NUM_INPUTS], desc='Extracting the samples and the statistics'):
         sample = Sample(text=text, label=label, prediction=prediction)
         data_samples.append(sample)
         # update the stats

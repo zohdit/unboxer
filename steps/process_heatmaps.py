@@ -9,10 +9,10 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
+from config.config_data import classifier
 from config.config_dirs import BEST_CONFIGURATIONS, HEATMAPS_DATA_RAW, \
     HEATMAPS_DATA
 from config.config_heatmaps import APPROACH, CLUSTERING_TECHNIQUE, EXPLAINERS, DIMENSIONALITY_REDUCTION_TECHNIQUES, ITERATIONS
-from utils import global_values
 from utils.clusters.Approach import OriginalMode, GlobalLatentMode, LocalLatentMode
 from utils.clusters.compare import compare_approaches
 from utils.dataframes.sample import sample_highest_score
@@ -45,11 +45,7 @@ def main():
     approach = APPROACHES[APPROACH]
     # Select the dimensionality reduction techniques based on the approach
     dimensionality_reduction_techniques = [[]] if approach is OriginalMode else DIMENSIONALITY_REDUCTION_TECHNIQUES
-    # If the processing mode is the original one, or there are no best logs -> try all the combinations
-    # if approach is OriginalMode:
     # Collect the approaches
-    classifier = global_values.classifier
-    # classifier.layers[-1].activation = tf.keras.activations.linear
     approaches = [
         approach(
             explainer=explainer(classifier),

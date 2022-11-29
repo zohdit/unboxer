@@ -6,7 +6,7 @@ from typing import Callable
 import numpy as np
 from clusim.clustering import Clustering
 
-from utils import global_values
+from utils import generate_inputs
 
 
 def get_sorted_clusters(clusters: list, metric: Callable[[list], tuple]) -> list:
@@ -91,8 +91,8 @@ def get_misclassified_items(cluster: np.ndarray):
     :return: The filtered cluster
     """
     # Get the indexes for the misclassified elements of the label
-    mask_label = np.array(global_values.test_labels == global_values.EXPECTED_LABEL)
-    mask_miss = np.array(global_values.test_labels != global_values.predictions)
+    mask_label = np.array(generate_inputs.test_labels == generate_inputs.EXPECTED_LABEL)
+    mask_miss = np.array(generate_inputs.test_labels != generate_inputs.predictions)
     mask_idxs = np.argwhere(mask_miss[mask_label]).flatten()
     intersection = np.intersect1d(cluster, mask_idxs)
     return intersection

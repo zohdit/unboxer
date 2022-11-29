@@ -2,7 +2,7 @@ from typing import Callable
 
 import numpy as np
 
-from utils import global_values
+from utils import generate_inputs
 from utils.clusters.postprocessing import get_misclassified_items
 from utils.stats import compute_comparison_matrix
 
@@ -13,8 +13,8 @@ def get_misses_count(cluster: list) -> int:
     :param cluster: The clusters
     :return: The number of misclassified elements in the clusters
     """
-    mask_label = np.array(global_values.test_labels == global_values.EXPECTED_LABEL)
-    mask_miss = np.array(global_values.test_labels != global_values.predictions)
+    mask_label = np.array(generate_inputs.test_labels == generate_inputs.EXPECTED_LABEL)
+    mask_miss = np.array(generate_inputs.test_labels != generate_inputs.predictions)
     # Get the indexes of the misclassified elements
     miss_idxs = np.argwhere(mask_miss[mask_label]).flatten()
     # Get the count of misclassified elements in the clusters
@@ -41,7 +41,7 @@ def get_labels_purity(cluster: list):
     if len(masked_entries) == 0:
         return np.nan
     # Find the predicted labels for the misclassified elements in the clusters
-    masked_labels = global_values.predictions[global_values.test_labels == global_values.EXPECTED_LABEL][masked_entries]
+    masked_labels = generate_inputs.predictions[generate_inputs.test_labels == generate_inputs.EXPECTED_LABEL][masked_entries]
     # Compute the purity of the clusters as the weighted average of the fraction of occurrences of each label
     labels, counts = np.unique(masked_labels, return_counts=True)
     purity = np.average(counts / len(masked_labels), weights=counts)
@@ -69,7 +69,7 @@ def get_central_elements(
     )
     # Find the centroid of the cluster as the element with the least sum of the distances from the others
 
-    mask_label = np.array(global_values.generated_labels == global_values.EXPECTED_LABEL)
+    mask_label = np.array(generate_inputs.generated_labels == generate_inputs.EXPECTED_LABEL)
     cluster_idxs = np.arange(len(mask_label))[cluster_idxs]
     medoid_idx = np.argmin(np.apply_along_axis(np.nansum, axis=0, arr=dist_matrix))
     medoid = cluster_idxs[medoid_idx]

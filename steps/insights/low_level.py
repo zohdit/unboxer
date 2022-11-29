@@ -1,13 +1,15 @@
+from config.config_data import EXPECTED_LABEL
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from clusim.clustering import Clustering
 from matplotlib import pyplot as plt
 from tqdm import tqdm
+import tensorflow as tf
 
 from config.config_dirs import HEATMAPS_DATA, HEATMAPS_DATA_RAW
 from config.config_general import CLUSTERS_SORT_METRIC, CLUSTERS_SIMILARITY_METRIC
-from utils import global_values
+from utils import generate_inputs
 from utils.clusters.postprocessing import get_sorted_clusters
 from utils.dataframes.sample import sample_most_popular
 from utils.general import save_figure
@@ -60,8 +62,12 @@ def heatmaps_clusters_images():
     df = pd.read_pickle(HEATMAPS_DATA)
     # Get the most popular configurations
     df = sample_most_popular(df)
-    mask_label = np.array(global_values.test_labels == global_values.EXPECTED_LABEL)
-    mask_miss = np.array(global_values.test_labels != global_values.predictions)
+
+    _, _, test_data, test_labels, predictions = generate_inputs.load_inputs()
+    test_data_gs = tf.image.rgb_to_grayscale(test_data)
+
+    mask_label = np.array(test_labels == EXPECTED_LABEL)
+    mask_miss = np.array(test_labels != predictions)
     approaches = df.index.unique()
     for approach in tqdm(approaches, desc='Exporting the clusters sample images'):
         # Get the best configuration for the explainer
@@ -91,8 +97,8 @@ def heatmaps_clusters_images():
         correct_sample_mask = mask_contains_miss_label & ~mask_miss[mask_label] & sample_mask
         fig, _ = visualize_clusters_images(
             cluster_membership=clusters_membership[correct_sample_mask],
-            images=global_values.test_data_gs[mask_label][correct_sample_mask],
-            predictions=global_values.predictions[mask_label][correct_sample_mask],
+            images=test_data_gs[mask_label][correct_sample_mask],
+            predictions=predictions[mask_label][correct_sample_mask],
             overlay=contributions[correct_sample_mask]
         )
         save_figure(fig, f'out/low_level/{approach}/clusters_correct_images')
@@ -100,8 +106,8 @@ def heatmaps_clusters_images():
         misses_sample_mask = mask_contains_miss_label & mask_miss[mask_label] & sample_mask
         fig, _ = visualize_clusters_images(
             cluster_membership=clusters_membership[misses_sample_mask],
-            images=global_values.test_data_gs[mask_label][misses_sample_mask],
-            predictions=global_values.predictions[mask_label][misses_sample_mask],
+            images=test_data_gs[mask_label][misses_sample_mask],
+            predictions=predictions[mask_label][misses_sample_mask],
             overlay=contributions[misses_sample_mask]
         )
         save_figure(fig, f'out/low_level/{approach}/clusters_misclassified_images')

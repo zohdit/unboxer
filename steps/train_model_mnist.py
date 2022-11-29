@@ -5,7 +5,7 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.datasets import mnist
 
-from utils.dataset import get_train_test_data
+from utils.dataset import get_train_test_data_mnist
 from config.config_data import USE_RGB
 
 def create_model(train_data, train_labels, test_data, test_labels, name):
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     # Get the train test data and convert the labels to categorical
     mnist_loader = lambda: mnist.load_data()
-    (train_data, train_labels), (test_data, test_labels) = get_train_test_data(
+    (train_data, train_labels), (test_data, test_labels) = get_train_test_data_mnist(
         dataset_loader=mnist_loader,
         rgb=USE_RGB,
         verbose=True
@@ -84,6 +84,6 @@ if __name__ == "__main__":
     tf.image.rgb_to_grayscale(train_data).numpy(),
     tf.image.rgb_to_grayscale(test_data).numpy())
 
-    # create_model(train_data_gs, train_labels, test_data_gs, test_labels, f"digit_classifier")
+    create_model(train_data_gs, train_labels, test_data_gs, test_labels, f"digit_classifier")
 
     # digit_classifier 99.24, 98.76

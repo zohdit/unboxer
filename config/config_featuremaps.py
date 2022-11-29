@@ -2,9 +2,7 @@ from utils.featuremaps.FeaturemapsClusteringMode import FeaturemapsClusteringMod
 
 
 
-CASE_STUDY = "IMDB" #IMDB, MNIST
-INPUT_MAXLEN = 2000
-VOCAB_SIZE = 2000
+CASE_STUDY = "MNIST" #IMDB, MNIST
 NUM_CELLS: int = 5
 BITMAP_THRESHOLD: float = 0.5
 ORIENTATION_THRESHOLD: float = 0.

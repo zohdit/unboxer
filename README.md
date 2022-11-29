@@ -1,15 +1,25 @@
 # 🥡 How to run the `unboxer` 🥡
 
+First, you should install the environment and set the configurations based on the case study (MNIST or IMDB) you want to run:
+
 ## 📲 [Install](README-INSTALLATION.md) 📲
 
 ## ⚙️ [Configure](README-CONFIGURATION.md) ⚙️
 
-## 🥵 Generate the heatmaps 🥵
+##  Generate inputs 
 
-You can run the following command to generate the heatmaps.
+You should run the following command to generate the inputs for corresponding case study.
 
 ```commandline
-python -m steps.process_featuremaps
+python -m utls.generate_inputs
+```
+
+## 🥵 Generate the heatmaps 🥵
+
+You should run the following command to generate the heatmaps.
+
+```commandline
+python -m steps.process_heatmaps
 ```
 
 The tool will experiment with the different explainers, find the best configuration for the dimensionality reduction,
@@ -43,10 +53,10 @@ The tool with prompt a menu with a set of options, and will guide you through th
 You can run the following command to export the data for the human evaluation.
 
 ```commandline
-python -m steps.human_evaluation.human_evaluation
+python -m steps.human_evaluation.export_samples
 ```
 
 **!!! IMPORTANT !!!**<br>
 **Remember to generate the heatmaps and the featuremaps before running this command.**
 
-The tool with prompt a menu with a set of options, and will guide you through the process.
+The tool will generate samples for human study in out/human_evaluation.
