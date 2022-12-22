@@ -9,7 +9,7 @@ from itertools import product
 __batch_size = 64
 
 # Choose between 0: OriginalMode | 1: LocalLatentMode | 2: GlobalLatentMode
-APPROACH = 1
+APPROACH = 0
 
 
 DIMENSIONALITY_REDUCTION_TECHNIQUES = [[TSNE(perplexity=1)]]

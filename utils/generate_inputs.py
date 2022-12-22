@@ -54,6 +54,7 @@ def save_inputs():
             for sample_file in [os.path.join(subdir, f) for f in files if f.endswith(".npy")]:
                 generated_data.append(np.load(sample_file))
 
+
         generated_data = np.array(generated_data)
 
         generated_labels = np.full(generated_data.shape[0], EXPECTED_LABEL)
@@ -89,6 +90,7 @@ def save_inputs():
         generated_data = np.concatenate((test_data, generated_data))
         generated_labels = np.concatenate((test_labels, generated_labels))
         generated_predictions = np.concatenate((predictions, generated_predictions))
+
 
         np.save(f"in/data/mnist/input/x_test.npy", generated_data)
         np.save(f"in/data/mnist/input/y_test.npy", generated_labels)

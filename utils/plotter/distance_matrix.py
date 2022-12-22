@@ -1,4 +1,5 @@
 from typing import Callable
+from config.config_dirs import DISTANCE_DATA
 
 import numpy as np
 import pandas as pd
@@ -36,7 +37,7 @@ def show_comparison_matrix(
 
     # Get the matrix
     matrix = compute_comparison_matrix(
-         values=values,
+        values=values,
         approaches=approaches,
         metric=metric,
         args=None,
@@ -50,6 +51,10 @@ def show_comparison_matrix(
         columns=index,
         index=index
     )
+
+    # saved for later statistical analysis    
+    plot_data.to_pickle(DISTANCE_DATA)
+
     # Find the average value for each cell
     plot_data = plot_data.groupby(plot_data.columns, axis=1).mean()
     plot_data = plot_data.groupby(plot_data.index, axis=0).mean()

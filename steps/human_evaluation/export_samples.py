@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from tqdm import tqdm
 import os.path
 import random
-import tenssorflow as tf
+import tensorflow as tf
 
 from config.config_data import EXPECTED_LABEL, classifier
 from config.config_heatmaps import EXPLAINERS
@@ -25,7 +25,7 @@ def export_clusters_sample_images():
     predictions = predictions[mask_label]
 
     # select 15 random images 
-    sample_indexes = random.sample(range(len(test_data)), 15) #[40, 13, 54, 140, 234, 125, 124, 103, 62, 164, 123, 0, 3, 187, 153] #
+    sample_indexes = range(len(test_data)) #[40, 13, 54, 140, 234, 125, 124, 103, 62, 164, 123, 0, 3, 187, 153] #random.sample(range(len(test_data)), 15) # #
     print(sample_indexes)
 
     sample_data = test_data[sample_indexes]
@@ -87,7 +87,7 @@ def export_clusters_sample_images():
             ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
             ax.imshow( 
                 image_gs,
-                cmap='gray_r',
+                cmap='gray',
                 extent=(0, image_gs.shape[0], image_gs.shape[1], 0)
             )
             plt.close()
@@ -182,4 +182,4 @@ def export_clusters_sample_texts():
 
 if __name__ == "__main__":
     export_clusters_sample_images()
-    export_clusters_sample_texts()
+    # export_clusters_sample_texts()

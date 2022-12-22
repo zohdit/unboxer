@@ -28,3 +28,4 @@ def combined_distance_matrix():
     display(plot_data[['approach','num_clusters']].groupby('approach').mean())
     fig.suptitle('Distance matrix for the low-level and high-level approaches')
     save_figure(fig, f'out/combined/distance_matrix')
+

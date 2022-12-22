@@ -17,3 +17,5 @@ playground/
 in/
 
 .vscode/
+
+.log

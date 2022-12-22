@@ -8,6 +8,22 @@ from cliffs_delta import cliffs_delta
 from pingouin import compute_effsize
 from scipy.stats import shapiro, ttest_ind, mannwhitneyu
 from tqdm import tqdm
+import scipy.stats as ss
+
+def eff_size_label(eff_size):
+    if np.abs(eff_size) < 0.2:
+        return 'negligible'
+    if np.abs(eff_size) < 0.5:
+        return 'small'
+    if np.abs(eff_size) < 0.8:
+        return 'medium'
+    return 'large'
+
+# def compare_distributions(lhs: list, rhs: list) -> tuple:
+#     (t, p) = ss.wilcoxon(lhs, rhs)
+#     eff_size = (np.mean(lhs) - np.mean(rhs)) / np.sqrt((np.std(lhs) ** 2 + np.std(rhs) ** 2) / 2.0)                   
+#     return p, eff_size, eff_size_label(eff_size)
+
 
 
 def compare_distributions(lhs: list, rhs: list) -> tuple:
@@ -28,14 +44,16 @@ def compare_distributions(lhs: list, rhs: list) -> tuple:
         # Normal distributions
         statistic, p_value = ttest_ind(lhs, rhs)
         eff_size = compute_effsize(lhs, rhs, eftype='cohen')
-        if eff_size <= .3:
+        if abs(eff_size) < 0.147:
+            eff_size_str = 'negligible'
+        elif abs(eff_size) <= .3:
             eff_size_str = 'small'
-        elif eff_size <= .5:
+        elif abs(eff_size) <= .474:
             eff_size_str = 'medium'
-        else:
+        elif abs(eff_size) > 0.474:
             eff_size_str = 'large'
 
-    return p_value < .05, p_value, eff_size, eff_size_str
+    return p_value, eff_size, eff_size_str
 
 
 def get_effect_size(lhs: list, rhs: list) -> tuple:
@@ -87,6 +105,7 @@ def compute_comparison_matrix(
         show_progress_bar=show_progress_bar,
         multi_process=multi_process
     )
+    # this returns min distance which corresponds to the max similarity
     matrix = np.min( np.array([matrix_ll_hl, matrix_hl_ll]), axis=0 )
     return matrix
 
